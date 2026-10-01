@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>பங்குக் குடும்பத் தகவல் பதிவு</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef3f8;--card:#fff;--ink:#17324d;--mut:#5b6f84;--line:#d3dde8;--pri:#1f4e79;--on:#fff;--acc:#b8892b;--err:#b3261e;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1b28;--card:#182a3c;--ink:#e8eff6;--mut:#9db0c3;--line:#2d4359;--pri:#6fa8dc;--on:#0f1b28;--acc:#e0b04f;--err:#f2b8b5}}
+:root[data-theme="dark"]{--bg:#0f1b28;--card:#182a3c;--ink:#e8eff6;--mut:#9db0c3;--line:#2d4359;--pri:#6fa8dc;--on:#0f1b28;--acc:#e0b04f;--err:#f2b8b5}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 "Noto Sans Tamil","Latha","Nirmala UI",system-ui,sans-serif}
+.wrap{max-width:640px;margin:0 auto;padding:16px}
+h1{font-size:1.4rem;margin:8px 0 4px;line-height:1.4}
+h2{font-size:1.05rem;margin:0 0 12px;color:var(--pri)}
+.sub{color:var(--mut);margin:0 0 16px;font-size:.92rem}
+.tabs{display:flex;gap:8px;margin:12px 0}
+.tabs button{flex:1}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+.card.m{border-left:4px solid var(--acc)}
+label{display:block;font-weight:600;font-size:.9rem;margin:12px 0 4px}
+input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--pri);outline-offset:1px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:420px){.row{grid-template-columns:1fr}}
+button{font:inherit;font-weight:600;border-radius:8px;padding:11px 16px;border:1px solid var(--pri);background:var(--card);color:var(--pri);cursor:pointer}
+button.p{background:var(--pri);color:var(--on)}
+button.on{background:var(--pri);color:var(--on)}
+button.link{border:0;background:none;padding:4px 0;color:var(--err)}
+.msg{padding:12px;border-radius:8px;margin:12px 0;font-weight:600}
+.ok{background:rgba(31,122,77,.15);color:var(--ink)}
+.bad{background:rgba(179,38,30,.13);color:var(--err)}
+.hide{display:none}
+.list-item{border-bottom:1px solid var(--line);padding:10px 0}
+.list-item:last-child{border:0}
+.list-item b{display:block}
+.mut{color:var(--mut);font-size:.88rem}
+.wide{overflow-x:auto}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>எங்கள் பங்கு – குடும்பத் தகவல் பதிவு</h1>
+<p class="sub">உங்கள் குடும்பத்தின் விவரங்களை நிரப்பி சமர்ப்பிக்கவும்.</p>
+<div class="tabs">
+<button id="tF" class="on" type="button">புதிய பதிவு</button>
+<button id="tL" type="button">பதிவுகள் (<span id="cnt">0</span>)</button>
+</div>
+
+<div id="vF">
+<div class="card">
+<h2>குடும்ப விவரங்கள்</h2>
+<label for="anbiyam">உங்கள் குடும்பம் எந்த அன்பியத்தைச் சேர்ந்தது?</label>
+<select id="anbiyam"><option value="">தேர்வு செய்க</option><option>தோமையார் அன்பியம்</option><option>சவேரியார் அன்பியம்</option><option>சின்னப்பர் அன்பியம்</option><option>அன்னை தெரசாள் அன்பியம்</option><option>பாத்திமா அன்னை அன்பியம்</option><option>திரு இருதய ஆண்டவர் அன்பியம்</option><option>சகாய அன்னை அன்பியம்</option><option>இம்மானுவேல் அன்பியம்</option></select>
+<label for="head">குடும்பத் தலைவரின் பெயர்</label>
+<input id="head">
+<label for="addr">முகவரி</label>
+<textarea id="addr" rows="2"></textarea>
+<label for="loc">Google இருப்பிடம் (இணைப்பு)</label>
+<input id="loc" type="url" placeholder="Google Maps இணைப்பை ஒட்டவும்">
+</div>
+
+<div id="mem"></div>
+<button id="addM" type="button">+ குடும்ப உறுப்பினரைச் சேர்க்க</button>
+
+<div class="card" style="margin-top:14px">
+<h2>இறந்த உறுப்பினர்கள் (விரும்பினால்)</h2>
+<div id="dec"></div>
+<button id="addD" type="button">+ இறந்தவரின் பெயரைச் சேர்க்க</button>
+</div>
+
+<div id="msg"></div>
+<button id="send" class="p" type="button" style="width:100%">சமர்ப்பிக்கவும்</button>
+</div>
+
+<div id="vL" class="hide">
+<div class="card">
+<p class="mut">இந்தச் சாதனத்தில் சமர்ப்பித்த பதிவுகள் மட்டும் இங்கே தெரியும். அனைத்துப் பதிவுகளும் Google Sheet-இல் இருக்கும்.</p>
+<input id="q" placeholder="பெயர் / அன்பியம் / எண் மூலம் தேடுக">
+<div id="items"></div>
+<p id="empty" class="mut hide">இன்னும் பதிவுகள் இல்லை. முதல் பதிவை நிரப்பவும்.</p>
+<button id="dl" type="button" style="width:100%;margin-top:12px">CSV பதிவிறக்கம்</button>
+</div>
+</div>
+</div>
+
+<script>
+/* ====== SETUP: paste your Google Apps Script Web App URL and choose a secret key (same key in Code.gs) ====== */
+var SCRIPT_URL="https://script.google.com/macros/s/AKfycbywm3Kkw2hTWLI3P74BIEmap_pdcmcvA3ajONqsuE2Xs4Epud0rckOHEJjNjBRyARvl/exec", KEY="123!!!";
+/* ======================================================================================================== */
+var F=[["name","முழு பெயர்","text"],["gender","பாலினம்","sel",["ஆண்","பெண்","மற்றவை"]],["dob","பிறந்த தேதி","date"],["phone","அலைபேசி எண்","tel"],["bDate","திருமுழுக்கு பெற்ற தேதி","date"],["bPlace","திருமுழுக்கு பெற்ற பங்கு / இடம்","text"],["cDate","புது நன்மை பெற்ற தேதி","date"],["cPlace","புது நன்மை பெற்ற பங்கு / இடம்","text"],["kDate","உறுதி பூசுதல் பெற்ற தேதி","date"],["kPlace","உறுதி பூசுதல் பெற்ற பங்கு / இடம்","text"],["marital","திருமண நிலை","sel",["திருமணமாகாதவர்","திருமணமானவர்","விதவை / மனைவியை இழந்தவர்","துறவறம்"]],["mDate","திருமண / துறவற தேதி","date"],["mPlace","திருமணம் / துறவற இடம்","text"]];
+var $=function(i){return document.getElementById(i)};
+var busy=false,LS="parishFamilies";
+function esc(s){var d=document.createElement("div");d.textContent=s==null?"":s;return d.innerHTML}
+function loadLocal(){try{return JSON.parse(localStorage.getItem(LS)||"[]")}catch(e){return[]}}
+function saveLocal(a){try{localStorage.setItem(LS,JSON.stringify(a))}catch(e){}}
+
+function addMember(){
+  var n=$("mem").children.length+1,c=document.createElement("div");
+  c.className="card m";
+  var h='<h2>குடும்ப உறுப்பினர் '+n+(n==1?" (குடும்பத் தலைவர்)":"")+'</h2><div class="row">';
+  F.forEach(function(f){
+    h+='<div'+(f[0]=="mDate"||f[0]=="mPlace"?' class="mw hide"':'')+'><label>'+f[1]+'</label>';
+    if(f[2]=="sel"){h+='<select data-k="'+f[0]+'"><option value="">தேர்வு செய்க</option>'+f[3].map(function(o){return"<option>"+o+"</option>"}).join("")+'</select>'}
+    else h+='<input data-k="'+f[0]+'" type="'+f[2]+'">';
+    h+='</div>';
+  });
+  h+='</div>'+(n>1?'<button class="link" type="button">நீக்கு</button>':'');
+  c.innerHTML=h;
+  var ms=c.querySelector('[data-k="marital"]');
+  ms.onchange=function(){
+    var s=ms.value=="திருமணமானவர்"||ms.value=="துறவறம்";
+    [].forEach.call(c.querySelectorAll(".mw"),function(w){w.classList.toggle("hide",!s);if(!s)w.querySelector("input").value=""});
+  };
+  var b=c.querySelector(".link");
+  if(b)b.onclick=function(){c.remove();renum()};
+  $("mem").appendChild(c);
+}
+function renum(){[].forEach.call($("mem").children,function(c,i){c.querySelector("h2").textContent="குடும்ப உறுப்பினர் "+(i+1)+(i==0?" (குடும்பத் தலைவர்)":"")})}
+function addDec(){
+  var c=document.createElement("div");c.className="row";c.style.marginBottom="10px";
+  c.innerHTML='<div><label>இறந்த நபரின் முழு பெயர்</label><input data-k="name"></div><div><label>இறந்த தேதி</label><input data-k="date" type="date"></div>';
+  $("dec").appendChild(c);
+}
+function grab(box){
+  return [].map.call(box.children,function(c){
+    var o={};[].forEach.call(c.querySelectorAll("[data-k]"),function(i){if(i.value.trim())o[i.dataset.k]=i.value.trim()});
+    return o;
+  }).filter(function(o){return Object.keys(o).length});
+}
+function resetForm(){
+  ["anbiyam","head","addr","loc"].forEach(function(i){$(i).value=""});
+  $("mem").innerHTML="";$("dec").innerHTML="";addMember();
+}
+function show(t,cls){$("msg").innerHTML=t?'<div class="msg '+cls+'" role="status">'+esc(t)+'</div>':""}
+
+/* send one record to Google Sheet; returns true only if the sheet confirmed it */
+async function post(rec){
+  try{
+    var r=await fetch(SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(Object.assign({key:KEY},rec))});
+    var j=await r.json();return !!(j&&j.ok);
+  }catch(e){return false}
+}
+
+async function submit(){
+  var p=$("mem").firstChild&&$("mem").firstChild.querySelector('[data-k="phone"]');
+  var rec={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),anbiyam:$("anbiyam").value.trim(),head:$("head").value.trim(),addr:$("addr").value.trim(),loc:$("loc").value.trim(),phone:p?p.value.trim():"",members:grab($("mem")),deceased:grab($("dec")),at:new Date().toISOString()};
+  if(!rec.anbiyam||!rec.head||!rec.phone){show("அன்பியம், குடும்பத் தலைவர் பெயர், உறுப்பினர் 1-ன் அலைபேசி எண் ஆகியவற்றை நிரப்பவும்.","bad");return}
+  if(!/^[0-9+\s-]{7,15}$/.test(rec.phone)){show("சரியான அலைபேசி எண்ணை உள்ளிடவும்.","bad");return}
+  if(SCRIPT_URL.indexOf("http")!==0){show("SCRIPT_URL அமைக்கப்படவில்லை (Setup பகுதியைப் பார்க்கவும்).","bad");return}
+  if(busy)return;busy=true;$("send").disabled=true;
+  rec.sent=false;
+  var a=loadLocal();a.unshift(rec);saveLocal(a);   /* local backup first, so nothing is lost */
+  var ok=await post(rec);
+  if(ok){a=loadLocal();a.forEach(function(x){if(x.id===rec.id)x.sent=true});saveLocal(a);resetForm();show("பதிவு சேமிக்கப்பட்டது. நன்றி!","ok");}
+  else show("இணையத்தில் சேமிக்க முடியவில்லை. தகவல் இந்தச் சாதனத்தில் பாதுகாப்பாக உள்ளது; 'பதிவுகள்' பகுதியில் மீண்டும் அனுப்பவும்.","bad");
+  window.scrollTo(0,0);busy=false;$("send").disabled=false;renderList();
+}
+
+function renderList(){
+  var q=$("q").value.trim().toLowerCase(),a=loadLocal();
+  var r=a.filter(function(x){return !q||JSON.stringify(x).toLowerCase().indexOf(q)>-1});
+  $("cnt").textContent=a.length;
+  $("empty").classList.toggle("hide",a.length>0);
+  $("items").innerHTML=r.map(function(x){
+    return '<div class="list-item"><b>'+esc(x.head)+'</b><span class="mut">'+esc(x.anbiyam)+' · '+esc(x.phone)+' · உறுப்பினர்கள்: '+((x.members||[]).length)+'</span><div class="mut">'+(x.sent?'✔ சேமிக்கப்பட்டது':'⚠ இன்னும் அனுப்பப்படவில்லை')+'</div>'+(x.sent?'':'<button type="button" data-id="'+esc(x.id)+'" style="margin-top:6px;padding:6px 12px">மீண்டும் அனுப்பு</button>')+'</div>';
+  }).join("");
+}
+async function retry(id){
+  var a=loadLocal(),x=a.find(function(r){return r.id===id});if(!x)return;
+  var ok=await post(x);
+  if(ok){x.sent=true;saveLocal(a);show("பதிவு சேமிக்கப்பட்டது.","ok")}else show("இன்னும் அனுப்ப முடியவில்லை. இணைப்பைச் சரிபார்க்கவும்.","bad");
+  renderList();
+}
+
+function csvCell(v){v=v==null?"":String(v);return '"'+v.replace(/"/g,'""')+'"'}
+function download(){
+  var head=["அன்பியம்","குடும்பத் தலைவர்","முகவரி","இருப்பிடம்","அலைபேசி"].concat(F.map(function(f){return f[1]}));
+  var out=[head.map(csvCell).join(",")];
+  loadLocal().forEach(function(x){
+    (x.members&&x.members.length?x.members:[{}]).forEach(function(m){
+      out.push([x.anbiyam,x.head,x.addr,x.loc,x.phone].concat(F.map(function(f){return m[f[0]]})).map(csvCell).join(","));
+    });
+  });
+  var blob=new Blob(["\ufeff"+out.join("\n")],{type:"text/csv;charset=utf-8"});
+  var l=document.createElement("a");l.href=URL.createObjectURL(blob);l.download="parish-families.csv";
+  document.body.appendChild(l);l.click();l.remove();
+}
+function tab(l){
+  $("vF").classList.toggle("hide",l);$("vL").classList.toggle("hide",!l);
+  $("tF").classList.toggle("on",!l);$("tL").classList.toggle("on",l);
+}
+$("addM").onclick=addMember;$("addD").onclick=addDec;$("send").onclick=submit;
+$("tF").onclick=function(){tab(false)};$("tL").onclick=function(){tab(true);renderList()};
+$("items").onclick=function(e){var b=e.target.closest("button[data-id]");if(b)retry(b.dataset.id)};
+$("q").oninput=renderList;$("dl").onclick=download;
+addMember();renderList();
+</script>
+</body>
+</html>
