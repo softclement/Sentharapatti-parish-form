@@ -47,7 +47,7 @@ button.link{border:0;background:none;padding:4px 0;color:var(--err)}
 <p class="sub">உங்கள் குடும்பத்தின் விவரங்களை நிரப்பி சமர்ப்பிக்கவும்.</p>
 <div class="tabs">
 <button id="tF" class="on" type="button">புதிய பதிவு</button>
-<button id="tL" type="button">பதிவுகள் (<span id="cnt">0</span>)</button>
+<button id="tL" type="button">என் பதிவுகள் (<span id="cnt">0</span>)</button>
 <button id="tA" type="button">நிர்வாகி</button>
 </div>
 
@@ -66,13 +66,11 @@ button.link{border:0;background:none;padding:4px 0;color:var(--err)}
 </div>
 
 <div id="mem"></div>
+<div class="row">
 <button id="addM" type="button">+ குடும்ப உறுப்பினரைச் சேர்க்க</button>
-
-<div class="card" style="margin-top:14px">
-<h2>இறந்த உறுப்பினர்கள் (விரும்பினால்)</h2>
-<div id="dec"></div>
-<button id="addD" type="button">+ இறந்தவரின் பெயரைச் சேர்க்க</button>
+<button id="addD" type="button">+ இறந்த உறுப்பினரைச் சேர்க்க</button>
 </div>
+<p class="mut">ஏற்கனவே பதிந்த உறுப்பினர் இறந்திருந்தால், உங்கள் பதிவைத் திருத்தி அவரது 'நிலை' என்பதை 'இறந்தவர்' என மாற்றி, இறந்த தேதியை உள்ளிடவும்.</p>
 
 <div id="msg"></div>
 <button id="send" class="p" type="button" style="width:100%">சமர்ப்பிக்கவும்</button>
@@ -99,7 +97,8 @@ button.link{border:0;background:none;padding:4px 0;color:var(--err)}
 
 <div id="vL" class="hide">
 <div class="card">
-<p class="mut">இந்தச் சாதனத்தில் சமர்ப்பித்த பதிவுகள் மட்டும் இங்கே தெரியும். அனைத்துப் பதிவுகளும் Google Sheet-இல் இருக்கும்.</p>
+<div id="lMsg"></div>
+<p class="mut">நீங்கள் இந்தச் சாதனத்தில் சமர்ப்பித்த பதிவுகள் இங்கே தெரியும்; கடவுச்சொல் இல்லாமல் திருத்தலாம். வேறு சாதனத்தில் திருத்த 'திருத்தும் இணைப்பு' பொத்தானைப் பயன்படுத்தவும்.</p>
 <input id="q" placeholder="பெயர் / அன்பியம் / எண் மூலம் தேடுக">
 <div id="items"></div>
 <p id="empty" class="mut hide">இன்னும் பதிவுகள் இல்லை. முதல் பதிவை நிரப்பவும்.</p>
@@ -110,20 +109,32 @@ button.link{border:0;background:none;padding:4px 0;color:var(--err)}
 
 <script>
 var SCRIPT_URL="https://script.google.com/macros/s/AKfycbxgosQu37mIaBjnPkqrHS1uQ_1NpXL6JzHQrRv-qdCgBiowt98WKCw4ZvvsOjPn1ft9ug/exec", KEY="123!!!";
-var F=[["name","முழு பெயர்","text"],["gender","பாலினம்","sel",["ஆண்","பெண்","மற்றவை"]],["dob","பிறந்த தேதி","date"],["phone","அலைபேசி எண்","tel"],["bDate","திருமுழுக்கு பெற்ற தேதி","date"],["bPlace","திருமுழுக்கு பெற்ற பங்கு / இடம்","text"],["cDate","புது நன்மை பெற்ற தேதி","date"],["cPlace","புது நன்மை பெற்ற பங்கு / இடம்","text"],["kDate","உறுதி பூசுதல் பெற்ற தேதி","date"],["kPlace","உறுதி பூசுதல் பெற்ற பங்கு / இடம்","text"],["marital","திருமண நிலை","sel",["திருமணமாகாதவர்","திருமணமானவர்","விதவை / மனைவியை இழந்தவர்","துறவறம்"]],["mDate","திருமண / துறவற தேதி","date"],["mPlace","திருமணம் / துறவற இடம்","text"]];
+var DEAD="இறந்தவர்";
+var F=[["name","முழு பெயர்","text"],["gender","பாலினம்","sel",["ஆண்","பெண்","மற்றவை"]],["dob","பிறந்த தேதி","date"],["phone","அலைபேசி எண்","tel"],["bDate","திருமுழுக்கு பெற்ற தேதி","date"],["bPlace","திருமுழுக்கு பெற்ற பங்கு / இடம்","text"],["cDate","புது நன்மை பெற்ற தேதி","date"],["cPlace","புது நன்மை பெற்ற பங்கு / இடம்","text"],["kDate","உறுதி பூசுதல் பெற்ற தேதி","date"],["kPlace","உறுதி பூசுதல் பெற்ற பங்கு / இடம்","text"],["marital","திருமண நிலை","sel",["திருமணமாகாதவர்","திருமணமானவர்","விதவை / மனைவியை இழந்தவர்","துறவறம்"]],["mDate","திருமண / துறவற தேதி","date"],["mPlace","திருமணம் / துறவற இடம்","text"],["dead","நிலை","sel",[DEAD],"உயிருடன்"],["dDate","இறந்த தேதி","date"]];
 var $=function(i){return document.getElementById(i)};
-var busy=false,LS="parishFamilies",editId=null,adminPw="",fams=[];
+var busy=false,LS="parishFamilies",editId=null,editMode=null,editToken=null,adminPw="",fams=[];
 function esc(s){var d=document.createElement("div");d.textContent=s==null?"":s;return d.innerHTML}
+function rnd(n){var a=new Uint8Array(n);crypto.getRandomValues(a);return Array.from(a,function(b){return("0"+b.toString(16)).slice(-2)}).join("")}
 function loadLocal(){try{return JSON.parse(localStorage.getItem(LS)||"[]")}catch(e){return[]}}
 function saveLocal(a){try{localStorage.setItem(LS,JSON.stringify(a))}catch(e){}}
+function box(id,t,cls){$(id).innerHTML=t?'<div class="msg '+cls+'" role="status">'+esc(t)+'</div>':""}
+function show(t,c){box("msg",t,c)} function aMsg(t,c){box("aMsg",t,c)} function lMsg(t,c){box("lMsg",t,c)}
+function errText(j){
+  if(j&&j.error==="auth")return "அனுமதி இல்லை / கடவுச்சொல் தவறு.";
+  if(j&&j.error==="locked")return "பல தவறான முயற்சிகள். 15 நிமிடம் கழித்து முயலவும்.";
+  if(j&&j.error==="layout")return "Sheet அமைப்பு பழையது. நிர்வாகியைத் தொடர்பு கொள்ளவும்.";
+  return "சேமிக்க முடியவில்லை. இணைப்பைச் சரிபார்த்து மீண்டும் முயலவும்.";
+}
 
-function addMember(){
+/* ---------- member cards ---------- */
+function addMember(dead){
   var n=$("mem").children.length+1,c=document.createElement("div");
   c.className="card m";
   var h='<h2>குடும்ப உறுப்பினர் '+n+(n==1?" (குடும்பத் தலைவர்)":"")+'</h2><div class="row">';
   F.forEach(function(f){
-    h+='<div'+(f[0]=="mDate"||f[0]=="mPlace"?' class="mw hide"':'')+'><label>'+f[1]+'</label>';
-    if(f[2]=="sel"){h+='<select data-k="'+f[0]+'"><option value="">தேர்வு செய்க</option>'+f[3].map(function(o){return"<option>"+o+"</option>"}).join("")+'</select>'}
+    var cls=(f[0]=="mDate"||f[0]=="mPlace")?' class="mw hide"':(f[0]=="dDate"?' class="dw hide"':'');
+    h+='<div'+cls+'><label>'+f[1]+'</label>';
+    if(f[2]=="sel"){h+='<select data-k="'+f[0]+'"><option value="">'+(f[4]||"தேர்வு செய்க")+'</option>'+f[3].map(function(o){return"<option>"+o+"</option>"}).join("")+'</select>'}
     else h+='<input data-k="'+f[0]+'" type="'+f[2]+'">';
     h+='</div>';
   });
@@ -134,15 +145,21 @@ function addMember(){
     var s=ms.value=="திருமணமானவர்"||ms.value=="துறவறம்";
     [].forEach.call(c.querySelectorAll(".mw"),function(w){w.classList.toggle("hide",!s);if(!s)w.querySelector("input").value=""});
   };
+  var ds=c.querySelector('[data-k="dead"]');
+  ds.onchange=function(){
+    var s=ds.value==DEAD;
+    [].forEach.call(c.querySelectorAll(".dw"),function(w){w.classList.toggle("hide",!s);if(!s)w.querySelector("input").value=""});
+  };
   var b=c.querySelector(".link");
   if(b)b.onclick=function(){c.remove();renum()};
   $("mem").appendChild(c);
+  if(dead===true){ds.value=DEAD;ds.onchange()}
+  return c;
 }
 function renum(){[].forEach.call($("mem").children,function(c,i){c.querySelector("h2").textContent="குடும்ப உறுப்பினர் "+(i+1)+(i==0?" (குடும்பத் தலைவர்)":"")})}
-function addDec(){
-  var c=document.createElement("div");c.className="row";c.style.marginBottom="10px";
-  c.innerHTML='<div><label>இறந்த நபரின் முழு பெயர்</label><input data-k="name"></div><div><label>இறந்த தேதி</label><input data-k="date" type="date"></div>';
-  $("dec").appendChild(c);
+function fillMember(c,m){
+  F.forEach(function(f){var i=c.querySelector('[data-k="'+f[0]+'"]');if(i&&m[f[0]])i.value=m[f[0]]});
+  c.querySelector('[data-k="marital"]').onchange();c.querySelector('[data-k="dead"]').onchange();
 }
 function grab(box){
   return [].map.call(box.children,function(c){
@@ -151,58 +168,104 @@ function grab(box){
   }).filter(function(o){return Object.keys(o).length});
 }
 function resetForm(){
-  editId=null;$("send").textContent="சமர்ப்பிக்கவும்";$("editBar").classList.add("hide");
+  editId=null;editMode=null;editToken=null;
+  $("send").textContent="சமர்ப்பிக்கவும்";$("editBar").classList.add("hide");
   ["anbiyam","head","addr","loc"].forEach(function(i){$(i).value=""});
-  $("mem").innerHTML="";$("dec").innerHTML="";addMember();
+  $("mem").innerHTML="";addMember();
 }
-function show(t,cls){$("msg").innerHTML=t?'<div class="msg '+cls+'" role="status">'+esc(t)+'</div>':""}
-function aMsg(t,cls){$("aMsg").innerHTML=t?'<div class="msg '+cls+'" role="status">'+esc(t)+'</div>':""}
+function readForm(){
+  var ms=grab($("mem")),ph="",bad=false;
+  ms.forEach(function(m){if(m.phone){if(!ph)ph=m.phone;if(!/^[0-9+\s-]{7,15}$/.test(m.phone))bad=true}});
+  return {bad:bad,f:{anbiyam:$("anbiyam").value.trim(),head:$("head").value.trim(),addr:$("addr").value.trim(),loc:$("loc").value.trim(),phone:ph,members:ms}};
+}
+function openEdit(fam,mode,token){
+  resetForm();editId=fam.id;editMode=mode;editToken=token;tab("F");show("","");
+  $("editName").textContent="திருத்துகிறீர்கள்: "+fam.head;$("editBar").classList.remove("hide");
+  $("send").textContent="மாற்றங்களைச் சேமிக்கவும்";
+  $("anbiyam").value=fam.anbiyam||"";$("head").value=fam.head||"";$("addr").value=fam.addr||"";$("loc").value=fam.loc||"";
+  $("mem").innerHTML="";
+  (fam.members&&fam.members.length?fam.members:[{}]).forEach(function(m){fillMember(addMember(),m)});
+  window.scrollTo(0,0);
+}
 
+/* ---------- server ---------- */
 async function call(payload){
   try{
     var r=await fetch(SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
     return await r.json();
   }catch(e){return {ok:false,error:"network"}}
 }
-async function post(rec){var j=await call(Object.assign({key:KEY},rec));return !!(j&&j.ok)}
+function famOf(x){return {id:x.id,anbiyam:x.anbiyam,head:x.head,addr:x.addr,loc:x.loc,phone:x.phone,members:x.members||[]}}
 
 async function submit(){
-  var p=$("mem").firstChild&&$("mem").firstChild.querySelector('[data-k="phone"]');
-  var rec={id:editId||(Date.now().toString(36)+Math.random().toString(36).slice(2,6)),anbiyam:$("anbiyam").value.trim(),head:$("head").value.trim(),addr:$("addr").value.trim(),loc:$("loc").value.trim(),phone:p?p.value.trim():"",members:grab($("mem")),deceased:grab($("dec")),at:new Date().toISOString()};
-  if(!rec.anbiyam||!rec.head||!rec.phone){show("அன்பியம், குடும்பத் தலைவர் பெயர், உறுப்பினர் 1-ன் அலைபேசி எண் ஆகியவற்றை நிரப்பவும்.","bad");return}
-  if(!/^[0-9+\s-]{7,15}$/.test(rec.phone)){show("சரியான அலைபேசி எண்ணை உள்ளிடவும்.","bad");return}
+  var r=readForm(),f=r.f;
+  if(!f.anbiyam||!f.head||!f.phone){show("அன்பியம், குடும்பத் தலைவர் பெயர் மற்றும் குறைந்தது ஒரு அலைபேசி எண்ணை நிரப்பவும்.","bad");return}
+  if(r.bad){show("சரியான அலைபேசி எண்ணை உள்ளிடவும்.","bad");return}
   if(busy)return;busy=true;$("send").disabled=true;
-
-  if(editId){   /* ---- admin correction of an existing family ---- */
-    var j=await call({action:"update",admin:adminPw,family:rec});
-    if(j&&j.ok){resetForm();tab("A");aMsg("மாற்றங்கள் சேமிக்கப்பட்டன.","ok");await refreshAdmin()}
-    else show(j&&j.error==="auth"?"நிர்வாகி கடவுச்சொல் தவறு. மீண்டும் உள்நுழையவும்.":"மாற்றங்களைச் சேமிக்க முடியவில்லை. இணைப்பைச் சரிபார்த்து மீண்டும் முயலவும்.","bad");
-    window.scrollTo(0,0);busy=false;$("send").disabled=false;return;
-  }
-
-  rec.sent=false;
-  var a=loadLocal();a.unshift(rec);saveLocal(a);   /* local backup first */
-  var ok=await post(rec);
-  if(ok){a=loadLocal();a.forEach(function(x){if(x.id===rec.id)x.sent=true});saveLocal(a);resetForm();show("பதிவு சேமிக்கப்பட்டது. நன்றி!","ok");}
-  else show("இணையத்தில் சேமிக்க முடியவில்லை. தகவல் இந்தச் சாதனத்தில் பாதுகாப்பாக உள்ளது; 'பதிவுகள்' பகுதியில் மீண்டும் அனுப்பவும்.","bad");
-  window.scrollTo(0,0);busy=false;$("send").disabled=false;renderList();
+  try{
+    if(editMode==="a"){                       /* admin edit */
+      f.id=editId;
+      var j=await call({action:"update",admin:adminPw,family:f});
+      if(j&&j.ok){resetForm();tab("A");aMsg("மாற்றங்கள் சேமிக்கப்பட்டன.","ok");await refreshAdmin()}else show(errText(j),"bad");
+    }else if(editMode==="o"){                 /* submitter edit (no password) */
+      f.id=editId;
+      var j2=await call({action:"edit",id:editId,token:editToken,family:f});
+      if(j2&&j2.ok){
+        var a=loadLocal(),x=a.find(function(q){return q.id===editId});
+        if(x){Object.assign(x,f,{sent:true})}else{a.unshift(Object.assign({token:editToken,sent:true},f))}
+        saveLocal(a);resetForm();tab("L");renderList();lMsg("மாற்றங்கள் சேமிக்கப்பட்டன.","ok");
+      }else show(j2&&j2.error==="auth"?"இந்தப் பதிவைத் திருத்த அனுமதி இல்லை (நிர்வாகியால் நீக்கப்பட்டிருக்கலாம்).":errText(j2),"bad");
+    }else{                                    /* new entry */
+      f.id="f"+rnd(5);
+      var rec=Object.assign({token:rnd(12),sent:false,at:new Date().toISOString()},f);
+      var l=loadLocal();l.unshift(rec);saveLocal(l);      /* local backup first */
+      var j3=await call({action:"add",key:KEY,token:rec.token,family:famOf(rec)});
+      if(j3&&j3.ok){l=loadLocal();l.forEach(function(q){if(q.id===rec.id)q.sent=true});saveLocal(l);resetForm();show("பதிவு சேமிக்கப்பட்டது. நன்றி! இதைத் திருத்த 'என் பதிவுகள்' பகுதியைப் பயன்படுத்தலாம்.","ok")}
+      else show("இணையத்தில் சேமிக்க முடியவில்லை. தகவல் இந்தச் சாதனத்தில் பாதுகாப்பாக உள்ளது; 'என் பதிவுகள்' பகுதியில் மீண்டும் அனுப்பவும்.","bad");
+    }
+  }finally{window.scrollTo(0,0);busy=false;$("send").disabled=false;renderList()}
 }
 
-/* ---------- this device's own records ---------- */
+/* ---------- my records (this device) ---------- */
 function renderList(){
   var q=$("q").value.trim().toLowerCase(),a=loadLocal();
   var r=a.filter(function(x){return !q||JSON.stringify(x).toLowerCase().indexOf(q)>-1});
   $("cnt").textContent=a.length;
   $("empty").classList.toggle("hide",a.length>0);
   $("items").innerHTML=r.map(function(x){
-    return '<div class="list-item"><b>'+esc(x.head)+'</b><span class="mut">'+esc(x.anbiyam)+' · '+esc(x.phone)+' · உறுப்பினர்கள்: '+((x.members||[]).length)+'</span><div class="mut">'+(x.sent?'✔ சேமிக்கப்பட்டது':'⚠ இன்னும் அனுப்பப்படவில்லை')+'</div>'+(x.sent?'':'<button type="button" data-id="'+esc(x.id)+'" style="margin-top:6px;padding:6px 12px">மீண்டும் அனுப்பு</button>')+'</div>';
+    var dead=(x.members||[]).filter(function(m){return m.dead}).length,id=esc(x.id);
+    var btn=function(act,t){return '<button type="button" data-act="'+act+'" data-id="'+id+'" style="padding:6px 12px">'+t+'</button>'};
+    return '<div class="list-item"><b>'+esc(x.head)+'</b><span class="mut">'+esc(x.anbiyam)+' · '+esc(x.phone)+' · உறுப்பினர்கள்: '+((x.members||[]).length)+(dead?' (இறந்தவர்: '+dead+')':'')+'</span><div class="mut">'+(x.sent?'✔ சேமிக்கப்பட்டது':'⚠ இன்னும் அனுப்பப்படவில்லை')+'</div><div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">'+(x.sent?btn("e","திருத்து")+btn("l","திருத்தும் இணைப்பு"):btn("r","மீண்டும் அனுப்பு"))+'</div></div>';
   }).join("");
 }
 async function retry(id){
   var a=loadLocal(),x=a.find(function(r){return r.id===id});if(!x)return;
-  var ok=await post(x);
-  if(ok){x.sent=true;saveLocal(a);show("பதிவு சேமிக்கப்பட்டது.","ok")}else show("இன்னும் அனுப்ப முடியவில்லை. இணைப்பைச் சரிபார்க்கவும்.","bad");
+  var j=await call({action:"add",key:KEY,token:x.token,family:famOf(x)});
+  if(j&&j.ok){x.sent=true;saveLocal(a);lMsg("பதிவு சேமிக்கப்பட்டது.","ok")}else lMsg("இன்னும் அனுப்ப முடியவில்லை. இணைப்பைச் சரிபார்க்கவும்.","bad");
   renderList();
+}
+async function editMine(id){
+  var x=loadLocal().find(function(r){return r.id===id});if(!x)return;
+  var fam=famOf(x),j=await call({action:"get",id:id,token:x.token});   /* newest copy from the Sheet */
+  if(j&&j.ok)fam=j.family;
+  else if(j&&j.error==="auth"){lMsg("இந்தப் பதிவு இனி கிடைக்கவில்லை (நிர்வாகியால் நீக்கப்பட்டிருக்கலாம்).","bad");return}
+  openEdit(fam,"o",x.token);
+}
+function copyLink(id){
+  var x=loadLocal().find(function(r){return r.id===id});if(!x)return;
+  var link=location.href.split("#")[0]+"#e="+x.id+"."+x.token;
+  var ask=function(){prompt("இந்த இணைப்பை நகலெடுக்கவும் (யாருடனும் பகிர வேண்டாம்):",link)};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(link).then(function(){lMsg("இணைப்பு நகலெடுக்கப்பட்டது. வேறு சாதனத்தில் திறந்து திருத்தலாம். இதை யாருடனும் பகிர வேண்டாம்.","ok")},ask);else ask();
+}
+async function fromLink(){
+  var m=/^#e=(f[0-9a-f]+)\.([0-9a-f]+)$/.exec(location.hash);if(!m)return;
+  history.replaceState(null,"",location.pathname+location.search);
+  var j=await call({action:"get",id:m[1],token:m[2]});
+  if(j&&j.ok){
+    var a=loadLocal();
+    if(!a.some(function(r){return r.id===m[1]})){a.unshift(Object.assign({token:m[2],sent:true},j.family));saveLocal(a)}
+    renderList();openEdit(j.family,"o",m[2]);
+  }else show("இந்த இணைப்பு செல்லுபடியாகவில்லை.","bad");
 }
 
 /* ---------- admin ---------- */
@@ -212,7 +275,7 @@ async function adminLogin(){
   var j=await call({action:"list",admin:pw});
   $("alogin").disabled=false;
   if(j&&j.ok){adminPw=pw;fams=j.families||[];$("apw").value="";$("aLock").classList.add("hide");$("aBody").classList.remove("hide");renderAdmin()}
-  else aMsg(j&&j.error==="auth"?"கடவுச்சொல் தவறு.":"தரவைப் பெற முடியவில்லை. இணைப்பைச் சரிபார்க்கவும்.","bad");
+  else aMsg(j&&j.error==="auth"?"கடவுச்சொல் தவறு.":j&&j.error==="locked"?errText(j):"தரவைப் பெற முடியவில்லை. இணைப்பைச் சரிபார்க்கவும்.","bad");
 }
 async function refreshAdmin(){
   var j=await call({action:"list",admin:adminPw});
@@ -224,37 +287,26 @@ function renderAdmin(){
   var r=fams.filter(function(f){return !q||JSON.stringify(f).toLowerCase().indexOf(q)>-1});
   $("acnt").textContent=fams.length;
   $("alist").innerHTML=r.map(function(f){
-    var m=(f.members&&f.members[0])||{};
-    return '<div class="list-item"><b>'+esc(f.head)+'</b><span class="mut">'+esc(f.anbiyam)+' · '+esc(m.phone||"")+' · உறுப்பினர்கள்: '+((f.members||[]).length)+'</span>'+(f.addr?'<div class="mut">'+esc(f.addr)+'</div>':'')+'<button type="button" data-id="'+esc(f.id)+'" style="margin-top:6px;padding:6px 12px">திருத்து</button></div>';
+    var ms=f.members||[],ph="",dead=ms.filter(function(m){return m.dead}).length,id=esc(f.id);
+    ms.forEach(function(m){if(!ph&&m.phone)ph=m.phone});
+    return '<div class="list-item"><b>'+esc(f.head)+'</b><span class="mut">'+esc(f.anbiyam)+' · '+esc(ph)+' · உறுப்பினர்கள்: '+ms.length+(dead?' (இறந்தவர்: '+dead+')':'')+'</span>'+(f.addr?'<div class="mut">'+esc(f.addr)+'</div>':'')+'<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap"><button type="button" data-act="e" data-id="'+id+'" style="padding:6px 12px">திருத்து</button><button type="button" data-act="d" data-id="'+id+'" style="padding:6px 12px;color:var(--err);border-color:var(--err)">நீக்கு</button></div></div>';
   }).join("");
 }
-function edit(id){
-  var x=fams.find(function(r){return r.id===id});if(!x)return;
-  resetForm();editId=id;tab("F");show("","");
-  $("editName").textContent="திருத்துகிறீர்கள்: "+x.head;$("editBar").classList.remove("hide");
-  $("send").textContent="மாற்றங்களைச் சேமிக்கவும்";
-  $("anbiyam").value=x.anbiyam||"";$("head").value=x.head||"";$("addr").value=x.addr||"";$("loc").value=x.loc||"";
-  $("mem").innerHTML="";
-  (x.members&&x.members.length?x.members:[{}]).forEach(function(m){
-    addMember();var c=$("mem").lastChild;
-    F.forEach(function(f){var i=c.querySelector('[data-k="'+f[0]+'"]');if(i&&m[f[0]])i.value=m[f[0]]});
-    c.querySelector('[data-k="marital"]').onchange();
-  });
-  $("dec").innerHTML="";
-  (x.deceased||[]).forEach(function(d){
-    addDec();var r=$("dec").lastChild;
-    r.querySelector('[data-k="name"]').value=d.name||"";r.querySelector('[data-k="date"]').value=d.date||"";
-  });
-  window.scrollTo(0,0);
+async function delFam(id){
+  var f=fams.find(function(r){return r.id===id});
+  if(!f||!confirm("'"+f.head+"' குடும்பப் பதிவை நிரந்தரமாக நீக்கவா?"))return;
+  var j=await call({action:"delete",admin:adminPw,id:id});
+  if(j&&j.ok){await refreshAdmin();aMsg("பதிவு நீக்கப்பட்டது.","ok")}else aMsg(errText(j),"bad");
 }
 
+/* ---------- csv / tabs / wiring ---------- */
 function csvCell(v){v=v==null?"":String(v);return '"'+v.replace(/"/g,'""')+'"'}
 function makeCsv(list,name){
   var head=["அன்பியம்","குடும்பத் தலைவர்","முகவரி","இருப்பிடம்"].concat(F.map(function(f){return f[1]}));
   var out=[head.map(csvCell).join(",")];
   list.forEach(function(x){
     (x.members&&x.members.length?x.members:[{}]).forEach(function(m){
-      out.push([x.anbiyam,x.head,x.addr,x.loc].concat(F.map(function(f){return m[f[0]]})).map(csvCell).join(","));
+      out.push([x.anbiyam,x.head,x.addr,x.loc].concat(F.map(function(f){return f[0]=="dead"?(m.dead||"உயிருடன்"):m[f[0]]})).map(csvCell).join(","));
     });
   });
   var blob=new Blob(["\ufeff"+out.join("\n")],{type:"text/csv;charset=utf-8"});
@@ -263,19 +315,20 @@ function makeCsv(list,name){
 }
 function tab(n){["F","L","A"].forEach(function(k){$("v"+k).classList.toggle("hide",k!==n);$("t"+k).classList.toggle("on",k===n)})}
 
-$("addM").onclick=addMember;$("addD").onclick=addDec;$("send").onclick=submit;
+$("addM").onclick=function(){addMember()};$("addD").onclick=function(){addMember(true)};$("send").onclick=submit;
 $("tF").onclick=function(){if(editId)resetForm();tab("F")};
 $("tL").onclick=function(){tab("L");renderList()};
 $("tA").onclick=function(){tab("A")};
-$("cancelEdit").onclick=function(){resetForm();tab("A")};
-$("items").onclick=function(e){var b=e.target.closest("button[data-id]");if(b)retry(b.dataset.id)};
-$("alist").onclick=function(e){var b=e.target.closest("button[data-id]");if(b)edit(b.dataset.id)};
+$("cancelEdit").onclick=function(){var m=editMode;resetForm();tab(m==="a"?"A":"L")};
+$("items").onclick=function(e){var b=e.target.closest("button[data-act]");if(!b)return;lMsg("");var id=b.dataset.id,a=b.dataset.act;if(a==="e")editMine(id);else if(a==="l")copyLink(id);else if(a==="r")retry(id)};
+$("alist").onclick=function(e){var b=e.target.closest("button[data-act]");if(!b)return;if(b.dataset.act==="e"){var f=fams.find(function(r){return r.id===b.dataset.id});if(f)openEdit(f,"a",null)}else delFam(b.dataset.id)};
 $("q").oninput=renderList;$("aq").oninput=renderAdmin;
-$("dl").onclick=function(){makeCsv(loadLocal(),"parish-families-this-device.csv")};
+$("dl").onclick=function(){makeCsv(loadLocal(),"my-families.csv")};
 $("adl").onclick=function(){makeCsv(fams,"parish-families-all.csv")};
 $("alogin").onclick=adminLogin;$("alogout").onclick=adminLogout;
 $("apw").onkeydown=function(e){if(e.key==="Enter")adminLogin()};
-addMember();renderList();
+saveLocal(loadLocal().filter(function(r){return r.token}));   /* drop records saved by the older version */
+addMember();renderList();fromLink();
 </script>
 </body>
 </html>
