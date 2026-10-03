@@ -20,8 +20,16 @@ h2{font-size:1.05rem;margin:0 0 12px;color:var(--pri)}
 .tabs{display:flex;gap:8px;margin:12px 0}
 .tabs button{flex:1}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
-.card.m{border-left:4px solid var(--acc);background:var(--mbg)}
+.card.m{overflow:hidden;border-left:4px solid var(--acc);background:var(--mbg)}
 .card.m input,.card.m select{background:var(--card)}
+.card.m h2{background:var(--pri);color:var(--on);margin:-16px -16px 14px -16px;padding:10px 16px}
+.card.m .row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:4px 10px}
+.card.m label{font-size:.82rem}
+.card.m input,.card.m select{min-width:0}
+.card.m .full{grid-column:1/-1}
+.card.m .ctr{text-align:center}
+.card.m .ctr select{max-width:260px;margin:0 auto;display:block;text-align:center;text-align-last:center}
+.card.m .ctr input{max-width:260px;margin:0 auto;display:block}
 label{display:block;font-weight:600;font-size:.9rem;margin:12px 0 4px}
 input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px}
 input:focus,select:focus,button:focus-visible{outline:2px solid var(--pri);outline-offset:1px}
@@ -107,7 +115,7 @@ button.link{border:0;background:none;padding:4px 0;color:var(--err)}
 </div>
 
 <script>
-var SCRIPT_URL="https://script.google.com/macros/s/AKfycbwQYgBjSGOEVX5QlNNC-p6AnnLWWr2TcNKQcL4onNK_pm_S3UNnwW2rnrShJx8DGLrW6A/exec", KEY="123!!!";
+var SCRIPT_URL="https://script.google.com/macros/s/AKfycbxgosQu37mIaBjnPkqrHS1uQ_1NpXL6JzHQrRv-qdCgBiowt98WKCw4ZvvsOjPn1ft9ug/exec", KEY="123!!!";
 var F=[["name","முழு பெயர்","text"],["gender","பாலினம்","sel",["ஆண்","பெண்","மற்றவை"]],["status","உறுப்பினர் நிலை","sel",["உயிருடன்","இறந்தவர்"]],["dDate","இறந்த தேதி","date"],["dob","பிறந்த தேதி","date"],["pob","பிறந்த இடம்","text"],["bDate","திருமுழுக்கு பெற்ற தேதி","date"],["bPlace","திருமுழுக்கு பெற்ற பங்கு / இடம்","text"],["cDate","புது நன்மை பெற்ற தேதி","date"],["cPlace","புது நன்மை பெற்ற பங்கு / இடம்","text"],["kDate","உறுதி பூசுதல் பெற்ற தேதி","date"],["kPlace","உறுதி பூசுதல் பெற்ற பங்கு / இடம்","text"],["marital","திருமண நிலை","sel",["திருமணமாகாதவர்","திருமணமானவர்","விதவை / மனைவியை இழந்தவர்","துறவறம்"]],["mDate","திருமண / துறவற தேதி","date"],["mPlace","திருமணம் / துறவற இடம்","text"]];
 var DEAD="இறந்தவர்",BS="margin:6px 6px 0 0;padding:6px 12px";
 var $=function(i){return document.getElementById(i)};
@@ -129,7 +137,13 @@ function addMember(){
   c.className="card m";
   var h='<h2>குடும்ப உறுப்பினர் '+n+(n==1?" (குடும்பத் தலைவர்)":"")+'</h2><div class="row">';
   F.forEach(function(f){
-    var k=f[0],cls=(k=="mDate"||k=="mPlace")?' class="lw mw hide"':(k=="dDate"?' class="dw hide"':((k=="name"||k=="gender"||k=="status")?'':' class="lw"'));
+    var k=f[0],cl=[];
+    if(k=="mDate"||k=="mPlace")cl.push("lw","mw","hide");
+    else if(k=="dDate")cl.push("dw","hide","full","ctr");
+    else if(k!="name"&&k!="gender"&&k!="status")cl.push("lw");
+    if(k=="status")cl.push("full","ctr");
+    if(k=="marital")cl.push("full");
+    var cls=cl.length?' class="'+cl.join(" ")+'"':'';
     h+='<div'+cls+'><label>'+f[1]+((k=="gender"||k=="name")?' *':'')+'</label>';
     if(f[2]=="sel"){h+='<select data-k="'+k+'">'+(k=="status"?'':'<option value="">தேர்வு செய்க</option>')+f[3].map(function(o){return"<option>"+o+"</option>"}).join("")+'</select>'}
     else h+='<input data-k="'+f[0]+'" type="'+f[2]+'">';
