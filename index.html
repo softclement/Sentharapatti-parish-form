@@ -6,10 +6,10 @@
 <title>பங்குக் குடும்பத் தகவல் பதிவு</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#eef3f8;--card:#fff;--ink:#17324d;--mut:#5b6f84;--line:#d3dde8;--pri:#1f4e79;--on:#fff;--acc:#b8892b;--err:#b3261e;
+:root{--bg:#eef3f8;--card:#fff;--ink:#17324d;--mut:#5b6f84;--line:#d3dde8;--pri:#1f4e79;--on:#fff;--acc:#b8892b;--err:#b3261e;--mbg:#fff6e0;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1b28;--card:#182a3c;--ink:#e8eff6;--mut:#9db0c3;--line:#2d4359;--pri:#6fa8dc;--on:#0f1b28;--acc:#e0b04f;--err:#f2b8b5}}
-:root[data-theme="dark"]{--bg:#0f1b28;--card:#182a3c;--ink:#e8eff6;--mut:#9db0c3;--line:#2d4359;--pri:#6fa8dc;--on:#0f1b28;--acc:#e0b04f;--err:#f2b8b5}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1b28;--card:#182a3c;--ink:#e8eff6;--mut:#9db0c3;--line:#2d4359;--pri:#6fa8dc;--on:#0f1b28;--acc:#e0b04f;--err:#f2b8b5;--mbg:#2a3a2c}}
+:root[data-theme="dark"]{--bg:#0f1b28;--card:#182a3c;--ink:#e8eff6;--mut:#9db0c3;--line:#2d4359;--pri:#6fa8dc;--on:#0f1b28;--acc:#e0b04f;--err:#f2b8b5;--mbg:#2a3a2c}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 "Noto Sans Tamil","Latha","Nirmala UI",system-ui,sans-serif}
@@ -20,7 +20,8 @@ h2{font-size:1.05rem;margin:0 0 12px;color:var(--pri)}
 .tabs{display:flex;gap:8px;margin:12px 0}
 .tabs button{flex:1}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
-.card.m{border-left:4px solid var(--acc)}
+.card.m{border-left:4px solid var(--acc);background:var(--mbg)}
+.card.m input,.card.m select{background:var(--card)}
 label{display:block;font-weight:600;font-size:.9rem;margin:12px 0 4px}
 input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px}
 input:focus,select:focus,button:focus-visible{outline:2px solid var(--pri);outline-offset:1px}
@@ -106,7 +107,7 @@ button.link{border:0;background:none;padding:4px 0;color:var(--err)}
 </div>
 
 <script>
-var SCRIPT_URL="https://script.google.com/macros/s/AKfycbxgosQu37mIaBjnPkqrHS1uQ_1NpXL6JzHQrRv-qdCgBiowt98WKCw4ZvvsOjPn1ft9ug/exec", KEY="123!!!";
+var SCRIPT_URL="https://script.google.com/macros/s/AKfycbwQYgBjSGOEVX5QlNNC-p6AnnLWWr2TcNKQcL4onNK_pm_S3UNnwW2rnrShJx8DGLrW6A/exec", KEY="123!!!";
 var F=[["name","முழு பெயர்","text"],["gender","பாலினம்","sel",["ஆண்","பெண்","மற்றவை"]],["status","உறுப்பினர் நிலை","sel",["உயிருடன்","இறந்தவர்"]],["dDate","இறந்த தேதி","date"],["dob","பிறந்த தேதி","date"],["pob","பிறந்த இடம்","text"],["bDate","திருமுழுக்கு பெற்ற தேதி","date"],["bPlace","திருமுழுக்கு பெற்ற பங்கு / இடம்","text"],["cDate","புது நன்மை பெற்ற தேதி","date"],["cPlace","புது நன்மை பெற்ற பங்கு / இடம்","text"],["kDate","உறுதி பூசுதல் பெற்ற தேதி","date"],["kPlace","உறுதி பூசுதல் பெற்ற பங்கு / இடம்","text"],["marital","திருமண நிலை","sel",["திருமணமாகாதவர்","திருமணமானவர்","விதவை / மனைவியை இழந்தவர்","துறவறம்"]],["mDate","திருமண / துறவற தேதி","date"],["mPlace","திருமணம் / துறவற இடம்","text"]];
 var DEAD="இறந்தவர்",BS="margin:6px 6px 0 0;padding:6px 12px";
 var $=function(i){return document.getElementById(i)};
@@ -129,7 +130,7 @@ function addMember(){
   var h='<h2>குடும்ப உறுப்பினர் '+n+(n==1?" (குடும்பத் தலைவர்)":"")+'</h2><div class="row">';
   F.forEach(function(f){
     var k=f[0],cls=(k=="mDate"||k=="mPlace")?' class="lw mw hide"':(k=="dDate"?' class="dw hide"':((k=="name"||k=="gender"||k=="status")?'':' class="lw"'));
-    h+='<div'+cls+'><label>'+f[1]+(k=="gender"?' *':'')+'</label>';
+    h+='<div'+cls+'><label>'+f[1]+((k=="gender"||k=="name")?' *':'')+'</label>';
     if(f[2]=="sel"){h+='<select data-k="'+k+'">'+(k=="status"?'':'<option value="">தேர்வு செய்க</option>')+f[3].map(function(o){return"<option>"+o+"</option>"}).join("")+'</select>'}
     else h+='<input data-k="'+f[0]+'" type="'+f[2]+'">';
     h+='</div>';
@@ -184,7 +185,8 @@ async function submit(){
   if(!rec.anbiyam||!rec.head){show("அன்பியம், குடும்பத் தலைவர் பெயர் ஆகியவற்றை நிரப்பவும்.","bad");return}
   var cards=$("mem").children;
   for(var gi=0;gi<cards.length;gi++){
-    var g=cards[gi].querySelector('[data-k="gender"]');
+    var nm=cards[gi].querySelector('[data-k="name"]'),g=cards[gi].querySelector('[data-k="gender"]');
+    if(!nm.value.trim()){show("குடும்ப உறுப்பினர் "+(gi+1)+": முழு பெயரை உள்ளிடவும்.","bad");nm.focus();return}
     if(!g.value){show("குடும்ப உறுப்பினர் "+(gi+1)+": பாலினத்தைத் தேர்வு செய்யவும்.","bad");g.focus();return}
   }
   if(SCRIPT_URL.indexOf("http")!==0){show("SCRIPT_URL அமைக்கப்படவில்லை.","bad");return}
