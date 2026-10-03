@@ -59,6 +59,8 @@ button.link{border:0;background:none;padding:4px 0;color:var(--err)}
 <select id="anbiyam"><option value="">தேர்வு செய்க</option><option>தோமையார் அன்பியம்</option><option>சவேரியார் அன்பியம்</option><option>சின்னப்பர் அன்பியம்</option><option>அன்னை தெரசாள் அன்பியம்</option><option>பாத்திமா அன்னை அன்பியம்</option><option>திரு இருதய ஆண்டவர் அன்பியம்</option><option>சகாய அன்னை அன்பியம்</option><option>இம்மானுவேல் அன்பியம்</option></select>
 <label for="head">குடும்பத் தலைவரின் பெயர்</label>
 <input id="head">
+<label for="phone">அலைபேசி எண்</label>
+<input id="phone" type="tel" inputmode="tel">
 <label for="addr">முகவரி</label>
 <textarea id="addr" rows="2"></textarea>
 <label for="loc">Google இருப்பிடம் (இணைப்பு)</label>
@@ -105,7 +107,7 @@ button.link{border:0;background:none;padding:4px 0;color:var(--err)}
 
 <script>
 var SCRIPT_URL="https://script.google.com/macros/s/AKfycbxgosQu37mIaBjnPkqrHS1uQ_1NpXL6JzHQrRv-qdCgBiowt98WKCw4ZvvsOjPn1ft9ug/exec", KEY="123!!!";
-var F=[["name","முழு பெயர்","text"],["gender","பாலினம்","sel",["ஆண்","பெண்","மற்றவை"]],["dob","பிறந்த தேதி","date"],["phone","அலைபேசி எண்","tel"],["bDate","திருமுழுக்கு பெற்ற தேதி","date"],["bPlace","திருமுழுக்கு பெற்ற பங்கு / இடம்","text"],["cDate","புது நன்மை பெற்ற தேதி","date"],["cPlace","புது நன்மை பெற்ற பங்கு / இடம்","text"],["kDate","உறுதி பூசுதல் பெற்ற தேதி","date"],["kPlace","உறுதி பூசுதல் பெற்ற பங்கு / இடம்","text"],["marital","திருமண நிலை","sel",["திருமணமாகாதவர்","திருமணமானவர்","விதவை / மனைவியை இழந்தவர்","துறவறம்"]],["mDate","திருமண / துறவற தேதி","date"],["mPlace","திருமணம் / துறவற இடம்","text"],["status","உறுப்பினர் நிலை","sel",["உயிருடன்","இறந்தவர்"]],["dDate","இறந்த தேதி","date"]];
+var F=[["name","முழு பெயர்","text"],["gender","பாலினம்","sel",["ஆண்","பெண்","மற்றவை"]],["dob","பிறந்த தேதி","date"],["pob","பிறந்த இடம்","text"],["bDate","திருமுழுக்கு பெற்ற தேதி","date"],["bPlace","திருமுழுக்கு பெற்ற பங்கு / இடம்","text"],["cDate","புது நன்மை பெற்ற தேதி","date"],["cPlace","புது நன்மை பெற்ற பங்கு / இடம்","text"],["kDate","உறுதி பூசுதல் பெற்ற தேதி","date"],["kPlace","உறுதி பூசுதல் பெற்ற பங்கு / இடம்","text"],["marital","திருமண நிலை","sel",["திருமணமாகாதவர்","திருமணமானவர்","விதவை / மனைவியை இழந்தவர்","துறவறம்"]],["mDate","திருமண / துறவற தேதி","date"],["mPlace","திருமணம் / துறவற இடம்","text"],["status","உறுப்பினர் நிலை","sel",["உயிருடன்","இறந்தவர்"]],["dDate","இறந்த தேதி","date"]];
 var DEAD="இறந்தவர்",BS="margin:6px 6px 0 0;padding:6px 12px";
 var $=function(i){return document.getElementById(i)};
 var busy=false,LS="parishFamilies",editMode=null,editId=null,editToken="",adminPw="",fams=[];
@@ -157,7 +159,7 @@ function grab(box){
 }
 function resetForm(){
   editMode=null;editId=null;editToken="";$("send").textContent="சமர்ப்பிக்கவும்";$("editBar").classList.add("hide");
-  ["anbiyam","head","addr","loc"].forEach(function(i){$(i).value=""});
+  ["anbiyam","head","phone","addr","loc"].forEach(function(i){$(i).value=""});
   $("mem").innerHTML="";addMember();
 }
 function authPart(){return editMode==="admin"?{admin:adminPw}:{token:editToken}}
@@ -176,11 +178,10 @@ function updateLocal(id,rec){var a=loadLocal();a.forEach(function(x){if(x.id===i
 function dropLocal(id){saveLocal(loadLocal().filter(function(x){return x.id!==id}))}
 
 async function submit(){
-  var members=grab($("mem")),phone="";
-  members.forEach(function(m){if(!phone&&m.phone)phone=m.phone});
-  var badPhone=members.some(function(m){return m.phone&&!/^[0-9+\s-]{7,15}$/.test(m.phone)});
+  var members=grab($("mem")),phone=$("phone").value.trim();
+  var badPhone=phone&&!/^[0-9+\s-]{7,15}$/.test(phone);
   var rec={id:editId||(Date.now().toString(36)+Math.random().toString(36).slice(2,6)),anbiyam:$("anbiyam").value.trim(),head:$("head").value.trim(),addr:$("addr").value.trim(),loc:$("loc").value.trim(),phone:phone,members:members,at:new Date().toISOString()};
-  if(!rec.anbiyam||!rec.head||!phone){show("அன்பியம், குடும்பத் தலைவர் பெயர், குறைந்தது ஒரு உறுப்பினரின் அலைபேசி எண் ஆகியவற்றை நிரப்பவும்.","bad");return}
+  if(!rec.anbiyam||!rec.head||!phone){show("அன்பியம், குடும்பத் தலைவர் பெயர், அலைபேசி எண் ஆகியவற்றை நிரப்பவும்.","bad");return}
   if(badPhone){show("சரியான அலைபேசி எண்ணை உள்ளிடவும்.","bad");return}
   if(SCRIPT_URL.indexOf("http")!==0){show("SCRIPT_URL அமைக்கப்படவில்லை.","bad");return}
   if(busy)return;busy=true;$("send").disabled=true;
@@ -231,7 +232,7 @@ function startEdit(f,mode,token){
   resetForm();editMode=mode;editId=f.id;editToken=token||"";tab("F");show("","");
   $("editName").textContent="திருத்துகிறீர்கள்: "+f.head;$("editBar").classList.remove("hide");
   $("send").textContent="மாற்றங்களைச் சேமிக்கவும்";
-  $("anbiyam").value=f.anbiyam||"";$("head").value=f.head||"";$("addr").value=f.addr||"";$("loc").value=f.loc||"";
+  $("anbiyam").value=f.anbiyam||"";$("head").value=f.head||"";$("phone").value=f.phone||"";$("addr").value=f.addr||"";$("loc").value=f.loc||"";
   $("mem").innerHTML="";
   (f.members&&f.members.length?f.members:[{}]).forEach(function(m){
     addMember();var c=$("mem").lastChild;
@@ -276,7 +277,7 @@ async function openFromHash(){
   var j=await call({action:"getOwn",id:m[1],token:m[2]});
   if(j&&j.ok){
     var a=loadLocal();
-    if(!a.some(function(x){return x.id===m[1]})){a.unshift({id:m[1],token:m[2],anbiyam:j.family.anbiyam,head:j.family.head,phone:(j.family.members[0]||{}).phone||"",count:j.family.members.length,at:"",sent:true});saveLocal(a);renderList()}
+    if(!a.some(function(x){return x.id===m[1]})){a.unshift({id:m[1],token:m[2],anbiyam:j.family.anbiyam,head:j.family.head,phone:j.family.phone||"",count:j.family.members.length,at:"",sent:true});saveLocal(a);renderList()}
     startEdit(j.family,"own",m[2]);
   }else show("இணைப்பு செல்லாது அல்லது பதிவு நீக்கப்பட்டுள்ளது.","bad");
 }
@@ -301,7 +302,7 @@ function renderAdmin(){
   $("acnt").textContent=fams.length;
   $("alist").innerHTML=r.map(function(f){
     var ms=f.members||[],m=ms[0]||{},dead=ms.filter(function(x){return x.status===DEAD}).length;
-    return '<div class="list-item"><b>'+esc(f.head)+'</b><span class="mut">'+esc(f.anbiyam)+' · '+esc(m.phone||"")+' · உறுப்பினர்கள்: '+ms.length+(dead?' (இறந்தவர்: '+dead+')':'')+'</span>'+(f.addr?'<div class="mut">'+esc(f.addr)+'</div>':'')+'<button type="button" data-act="aedit" data-id="'+esc(f.id)+'" style="'+BS+'">திருத்து</button><button type="button" data-act="adel" data-id="'+esc(f.id)+'" style="'+BS+'">நீக்கு</button></div>';
+    return '<div class="list-item"><b>'+esc(f.head)+'</b><span class="mut">'+esc(f.anbiyam)+' · '+esc(f.phone||"")+' · உறுப்பினர்கள்: '+ms.length+(dead?' (இறந்தவர்: '+dead+')':'')+'</span>'+(f.addr?'<div class="mut">'+esc(f.addr)+'</div>':'')+'<button type="button" data-act="aedit" data-id="'+esc(f.id)+'" style="'+BS+'">திருத்து</button><button type="button" data-act="adel" data-id="'+esc(f.id)+'" style="'+BS+'">நீக்கு</button></div>';
   }).join("");
 }
 async function adminDelete(id){
@@ -312,11 +313,11 @@ async function adminDelete(id){
 
 function csvCell(v){v=v==null?"":String(v);return '"'+v.replace(/"/g,'""')+'"'}
 function makeCsv(list,name){
-  var head=["அன்பியம்","குடும்பத் தலைவர்","முகவரி","இருப்பிடம்"].concat(F.map(function(f){return f[1]}));
+  var head=["அன்பியம்","குடும்பத் தலைவர்","அலைபேசி எண்","முகவரி","இருப்பிடம்"].concat(F.map(function(f){return f[1]}));
   var out=[head.map(csvCell).join(",")];
   list.forEach(function(x){
     (x.members&&x.members.length?x.members:[{}]).forEach(function(m){
-      out.push([x.anbiyam,x.head,x.addr,x.loc].concat(F.map(function(f){return m[f[0]]})).map(csvCell).join(","));
+      out.push([x.anbiyam,x.head,x.phone,x.addr,x.loc].concat(F.map(function(f){return m[f[0]]})).map(csvCell).join(","));
     });
   });
   var blob=new Blob(["\ufeff"+out.join("\n")],{type:"text/csv;charset=utf-8"});
