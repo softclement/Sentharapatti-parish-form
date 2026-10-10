@@ -314,7 +314,7 @@ body.adminOnly #tF,body.adminOnly #tL{display:none}
 <div class="acts"><button id="fcNew" type="button">புதிய இணைப்பு</button><button id="fcClose" type="button">மூடு</button></div>
 </div></div></div>
 <script>
-var SCRIPT_URL="https://script.google.com/macros/s/AKfycbwQYgBjSGOEVX5QlNNC-p6AnnLWWr2TcNKQcL4onNK_pm_S3UNnwW2rnrShJx8DGLrW6A/exec";
+var SCRIPT_URL="https://script.google.com/macros/s/AKfycbzSb6MUMiG6ko-0GVfI5GId20SMeZ73x4YSUEEWeQTJWh4jwAU7Q5E1aZsSjaUK0r3osA/exec";
 var F=[["name","முழு பெயர்","text"],["gender","பாலினம்","sel",["ஆண்","பெண்","மற்றவை"]],["rel","குடும்பத் தலைவருடன் உறவு முறை","combo"],["status","உறுப்பினர் நிலை","sel",["உயிருடன்","இறந்தவர்"]],["dDate","இறந்த தேதி","date"],["dob","பிறந்த தேதி","date"],["pob","பிறந்த இடம்","text"],["bDate","திருமுழுக்கு பெற்ற தேதி","date"],["bPlace","திருமுழுக்கு பெற்ற பங்கு / இடம்","text"],["cDate","புது நன்மை பெற்ற தேதி","date"],["cPlace","புது நன்மை பெற்ற பங்கு / இடம்","text"],["kDate","உறுதி பூசுதல் பெற்ற தேதி","date"],["kPlace","உறுதி பூசுதல் பெற்ற பங்கு / இடம்","text"],["marital","திருமண நிலை","sel",["திருமணமாகாதவர்","திருமணமானவர்","விதவை / மனைவியை இழந்தவர்","துறவறம்"]],["mDate","திருமண / துறவற தேதி","date"],["mPlace","திருமணம் / துறவற இடம்","text"]];
 var REL=[["Mother","அம்மா"],["Father","அப்பா"],["Brother","சகோதரன்"],["Sister","சகோதரி"],["Son","மகன்"],["Daughter","மகள்"],["Husband","கணவர்"],["Wife","மனைவி"],["Grandfather","தாத்தா"],["Grandmother","பாட்டி"],["Grandson","பேரன்"],["Granddaughter","பேத்தி"],["Father-in-law","மாமனார்"],["Mother-in-law","மாமியார்"],["Brother-in-law","மைத்துனர்"],["Sister-in-law","மைத்துனி"]];
 function fillRel(){$("relList").innerHTML=REL.map(function(r){return'<option value="'+r[0]+'" label="'+(LANG==="en"?r[0]:r[1])+'"></option>'}).join("")}
@@ -1272,7 +1272,8 @@ async function openCard(id,regen){
   if(!(j&&j.ok)){aMsg(errText(j),"bad");return}
   FC={id:id,f:f};
   $("fcCard").innerHTML=cardHtml(f);$("fcLink").value=cardUrl(id,j.key);$("fcNum").value=f.phone||"";
-  fcm(regen?"புதிய இணைப்பு உருவாக்கப்பட்டது. பழைய இணைப்பு இனி செயல்படாது.":"","ok");
+  var ud=j.until?pd(j.until):null;
+  fcm((regen?"புதிய இணைப்பு உருவாக்கப்பட்டது. பழைய இணைப்பு இனி செயல்படாது. ":"")+(j.until?"இந்த இணைப்பு செல்லுபடியாகும் நாள்: "+(ud?fd(ud):j.until):""),"ok");
   $("fcm").classList.add("on");$("fcWa").focus();
 }
 function closeCard(){$("fcm").classList.remove("on")}
@@ -1299,7 +1300,8 @@ function cardBoot(){   /* a family opened its card link: show ONLY the card (no 
   document.body.classList.remove("gateMode");$("cardView").classList.remove("hide");
   $("cvBody").innerHTML='<p class="mut">சரிபார்க்கிறது…</p>';
   call({action:"cardGet",id:m[1],key:m[2]}).then(function(j){
-    $("cvBody").innerHTML=(j&&j.ok)?cardHtml(j.card):'<p class="msg bad">'+esc(j&&j.error==="network"?errText(j):"இணைப்பு செல்லாது அல்லது புதுப்பிக்கப்பட்டுள்ளது.")+'</p>';
+    var ud=j&&j.ok&&j.until?pd(j.until):null;
+    $("cvBody").innerHTML=(j&&j.ok)?cardHtml(j.card)+(j.until?'<p class="mut noprint" style="margin:10px 0 0">இந்த இணைப்பு செல்லுபடியாகும் நாள்: '+esc(ud?fd(ud):j.until)+'. அதற்குள் அச்சிட்டு அல்லது PDF ஆகச் சேமித்துக் கொள்ளவும்.</p>':''):'<p class="msg bad">'+esc(j&&j.error==="network"?errText(j):j&&j.error==="expired"?"இந்த இணைப்பின் காலம் முடிந்துவிட்டது. புதிய இணைப்புக்கு உங்கள் தன்னார்வலரை அல்லது பங்கு அலுவலகத்தை அணுகவும்.":"இணைப்பு செல்லாது அல்லது புதுப்பிக்கப்பட்டுள்ளது.")+'</p>';
   });
   return true;
 }
@@ -1486,6 +1488,9 @@ PH.push(["சரிபார்ப்பு – முழு விவரம்"
 ["இந்த விவரங்கள் சரியாக உள்ளன என உறுதி செய்து, 'சரிபார்க்கப்பட்டது' எனக் குறிக்கவா?","Confirm that these details are correct and mark the record as Verified?"],
 ["✔ ஆம், சரிபார்க்கப்பட்டது எனக் குறி","✔ Yes, mark as Verified"]);
 PH.sort(function(a,b){return b[0].length-a[0].length});
+PH.push(["இந்த இணைப்பு செல்லுபடியாகும் நாள்:","This link is valid until:"],
+["அதற்குள் அச்சிட்டு அல்லது PDF ஆகச் சேமித்துக் கொள்ளவும்.","Please print it or save it as a PDF before then."],
+["இந்த இணைப்பின் காலம் முடிந்துவிட்டது. புதிய இணைப்புக்கு உங்கள் தன்னார்வலரை அல்லது பங்கு அலுவலகத்தை அணுகவும்.","This link has expired. Please contact your volunteer or the parish office for a new link."]);
 PH.sort(function(a,b){return b[0].length-a[0].length});
 function seg(x){
   if(EX.hasOwnProperty(x))return EX[x];
