@@ -47,7 +47,8 @@ button.link{border:0;background:none;padding:4px 0;color:var(--err)}
 .list-item:last-child{border:0}
 .list-item b{display:block}
 .mut{color:var(--mut);font-size:.88rem}
-.wide{overflow-x:auto}
+.wide{overflow-x:auto;scrollbar-width:auto;scrollbar-color:var(--mut) var(--line);padding-bottom:4px}.wide::-webkit-scrollbar{height:12px}.wide::-webkit-scrollbar-track{background:var(--line);border-radius:6px}.wide::-webkit-scrollbar-thumb{background:var(--mut);border-radius:6px}
+.dt th.sortable{cursor:pointer;user-select:none}.dt th.sortable:hover{color:var(--ink)}
 .wrap.wd{max-width:1100px}
 .langbar{display:flex;justify-content:flex-end;align-items:center;gap:6px}
 .langbar button{padding:4px 12px;font-size:.85rem}
@@ -245,11 +246,11 @@ body.adminOnly #tF,body.adminOnly #tL{display:none}
 <label style="margin:0;font-weight:400">உறுதி பூசுதல் வயது ≥ <input id="dCF" type="number" min="0" max="40" value="14" style="width:70px;display:inline-block"></label></div>
 <div id="dGapB"></div></div>
 <div class="card pii"><div class="hd"><h2>வரவிருக்கும் நிகழ்வுகள்</h2><button type="button" class="sm noprint" data-exp="ev">CSV</button></div>
-<div class="tools noprint"><select id="dEvW" aria-label="காலம்"><option value="0">இன்று மட்டும்</option><option value="7">அடுத்த 7 நாட்கள்</option><option value="30" selected>அடுத்த 30 நாட்கள்</option><option value="60">அடுத்த 60 நாட்கள்</option><option value="90">அடுத்த 90 நாட்கள்</option><option value="month">இந்த மாதம்</option></select></div>
+<div class="tools noprint"><select id="dEvW" aria-label="காலம்"><option value="0">இன்று மட்டும்</option><option value="7" selected>அடுத்த 7 நாட்கள்</option><option value="30">அடுத்த 30 நாட்கள்</option><option value="60">அடுத்த 60 நாட்கள்</option><option value="90">அடுத்த 90 நாட்கள்</option><option value="month">இந்த மாதம்</option></select></div>
 <div id="dEvB"></div></div>
 <div class="card pii"><div class="hd"><h2>தரவுத் தர சோதனை</h2><button type="button" class="sm noprint" data-exp="q">CSV</button></div><div id="dQB"></div></div>
 <div class="card pii"><div class="hd"><h2>உறுப்பினர் தேடல்</h2><button type="button" class="sm noprint" data-exp="s">CSV</button></div>
-<input id="dSq" type="text" class="noprint" placeholder="பெயர் / தலைவர் / அன்பியம் / முகவரி / எண்">
+<div class="tools noprint"><select id="dSa" aria-label="அன்பியம்"><option value="">எல்லா அன்பியங்களும்</option></select><input id="dSq" type="text" placeholder="பெயர் / தலைவர் / அன்பியம் / முகவரி / எண்" style="flex:1 1 220px"></div>
 <div id="dSB"></div></div>
 <div class="card pii"><div class="hd"><h2>குடும்பப் பட்டியல்</h2><button type="button" class="sm noprint" data-exp="fam">CSV</button></div><div id="dFamB"></div></div>
 </div>
@@ -615,12 +616,42 @@ function anbList(){var s=[],seen={};(ANBA.length?ANBA:ANBS).forEach(function(o){
 function eb(id){return'<button type="button" class="sm" data-act="dedit" data-id="'+esc(id)+'">திருத்து</button>'}
 function tbl(cols,rows,ids,cap){
   if(!rows.length)return'<p class="mut">இல்லை.</p>';
-  cap=cap||200;var h='<div class="wide"><table class="dt"><thead><tr>'+cols.map(function(c){return'<th>'+esc(c)+'</th>'}).join("")+(ids?'<th></th>':'')+'</tr></thead><tbody>';
-  rows.slice(0,cap).forEach(function(r,i){h+='<tr>'+r.map(function(c){return'<td>'+esc(c)+'</td>'}).join("")+(ids?'<td>'+eb(ids[i])+'</td>':'')+'</tr>'});
+  cap=cap||200;var h='<div class="wide"><table class="dt"><thead><tr>'+(ids?'<th></th>':'')+cols.map(function(c){return'<th>'+esc(c)+'</th>'}).join("")+'</tr></thead><tbody>';
+  rows.slice(0,cap).forEach(function(r,i){h+='<tr>'+(ids?'<td>'+eb(ids[i])+'</td>':'')+r.map(function(c){return'<td>'+esc(c)+'</td>'}).join("")+'</tr>'});
   h+='</tbody></table></div>';
   if(rows.length>cap)h+='<p class="mut">முதல் '+cap+' பதிவுகள் மட்டும் காட்டப்பட்டுள்ளன; முழுப் பட்டியலுக்கு CSV பயன்படுத்தவும்.</p>';
   return h;
 }
+var PT={},PSIZE=10;
+function ptSet(key,box,cols,rows,ids,sortable){   /* paged table: 10 rows per page, optional click-to-sort headers; edit button first */
+  var o=PT[key]||(PT[key]={p:0,c:-1,d:1});
+  o.box=box;o.cols=cols;o.rows=rows;o.ids=ids;o.sortable=!!sortable;o.p=0;o.size=PSIZE;
+  if(!box.__pt){box.__pt=1;box.addEventListener("click",function(e){
+    var th=e.target.closest("th[data-c]"),pg=e.target.closest("button[data-pg]");
+    if(th){var c=+th.dataset.c;if(o.c===c)o.d=-o.d;else{o.c=c;o.d=1}o.p=0;ptDraw(key)}
+    else if(pg&&!pg.disabled){o.p+=+pg.dataset.pg;ptDraw(key)}
+  })}
+  ptDraw(key);
+}
+function ptDraw(key){
+  var t=PT[key],n=t.rows.length;
+  if(!n){t.box.innerHTML='<p class="mut">இல்லை.</p>';return}
+  var idx=t.rows.map(function(_,i){return i});
+  if(t.sortable&&t.c>=0)idx.sort(function(a,b){
+    var x=t.rows[a][t.c],y=t.rows[b][t.c],ex=(x===""||x==null),ey=(y===""||y==null);
+    if(ex||ey)return ex&&ey?0:(ex?1:-1);   /* blanks always last */
+    var r=(typeof x==="number"&&typeof y==="number")?x-y:String(x).localeCompare(String(y),"ta",{numeric:true,sensitivity:"base"});
+    return r*t.d||a-b});
+  var size=t.size,pages=Math.ceil(n/size);if(t.p>=pages)t.p=pages-1;if(t.p<0)t.p=0;
+  var from=t.p*size,part=idx.slice(from,from+size);
+  var h='<div class="wide"><table class="dt"><thead><tr>'+(t.ids?'<th></th>':'')+t.cols.map(function(c,i){return'<th'+(t.sortable?' class="sortable" data-c="'+i+'" title="வரிசைப்படுத்து"':'')+'>'+esc(c)+(t.sortable&&t.c===i?(t.d>0?" ▲":" ▼"):"")+'</th>'}).join("")+'</tr></thead><tbody>';
+  part.forEach(function(i){h+='<tr>'+(t.ids?'<td>'+eb(t.ids[i])+'</td>':'')+t.rows[i].map(function(c){return'<td>'+esc(c)+'</td>'}).join("")+'</tr>'});
+  h+='</tbody></table></div>';
+  if(n>size)h+='<div class="pager noprint"><button type="button" class="sm" data-pg="-1"'+(t.p<=0?' disabled':'')+'>← முந்தைய 10</button><span class="mut">காட்டப்படுவது '+(from+1)+'–'+(from+part.length)+' / '+n+'</span><button type="button" class="sm" data-pg="1"'+(t.p>=pages-1?' disabled':'')+'>அடுத்த 10 →</button></div>';
+  t.box.innerHTML=h;
+}
+window.addEventListener("beforeprint",function(){Object.keys(PT).forEach(function(k){PT[k].size=1e9;ptDraw(k)})});   /* printing shows every row */
+window.addEventListener("afterprint",function(){Object.keys(PT).forEach(function(k){PT[k].size=PSIZE;ptDraw(k)})});
 function hb(rows,max){
   max=max||Math.max.apply(null,rows.map(function(r){return r.v}).concat([1]));
   return rows.map(function(r){
@@ -634,6 +665,8 @@ function renderDash(){
   var sel=$("dAnb"),cur=dashAnb;
   sel.innerHTML="";var o0=document.createElement("option");o0.value="";o0.textContent="எல்லா அன்பியங்களும்";sel.appendChild(o0);
   anbList().forEach(function(k){var o=document.createElement("option");o.value=k;o.textContent=anbNameOf(k);sel.appendChild(o)});
+  var sa=$("dSa"),sv=sa.value;sa.innerHTML="";var s0=document.createElement("option");s0.value="";s0.textContent="எல்லா அன்பியங்களும்";sa.appendChild(s0);
+  anbList().forEach(function(k){var o=document.createElement("option");o.value=k;o.textContent=anbNameOf(k);sa.appendChild(o)});sa.value=sv;if(sa.value!==sv)sa.value="";
   sel.value=cur;if(sel.value!==cur){dashAnb="";sel.value=""}
   $("dNote").textContent=dashAnb?("வடிகட்டி: "+anbNameOf(dashAnb)+" — அன்பியம் வரைபடம் அனைத்து அன்பியங்களையும் காட்டும்; மற்ற பகுதிகள் இந்த அன்பியத்திற்கு மட்டும்."):("எல்லா அன்பியங்களும் · புதுப்பிக்கப்பட்ட நேரம்: "+new Date().toLocaleTimeString());
   renderKpi();renderAnbi();renderTrend();renderAge();renderMar();renderSac();renderGap();renderEv();renderQ();renderFam();renderSearch();
@@ -708,9 +741,7 @@ function renderMar(){
   var mo=F.filter(function(f){return f[0]==="marital"})[0][3].concat([NA]),go=["ஆண்","பெண்","மற்றவை",NA];
   L.forEach(function(x){var v=x.m.marital||NA,g=x.m.gender||NA;c[v]=(c[v]||0)+1;gc[g]=(gc[g]||0)+1});
   var row=function(o,cc,cls){return hb(o.map(function(k){var v=cc[k]||0;return{l:k,v:v,t:v+" ("+pct(v,L.length)+"%)",c:cls}}),Math.max(1,L.length))};
-  var rc={},rt=0;dfams().forEach(function(f){(f.members||[]).slice(1).forEach(function(m){var k=m.rel?relLabel(m.rel):NA;rc[k]=(rc[k]||0)+1;rt++})});
-  var rk=Object.keys(rc).sort(function(a,b){return rc[b]-rc[a]}),relHtml=rt?hb(rk.map(function(k){return{l:k,v:rc[k],t:rc[k]+" ("+pct(rc[k],rt)+"%)",c:"b3"}}),Math.max(1,rc[rk[0]])):'<p class="mut">இல்லை.</p>';
-  $("dMar").innerHTML='<p class="mut">உயிருடன் உள்ளவர்கள் மட்டும்: '+L.length+'</p><p><b>திருமண நிலை</b></p>'+row(mo,c,"b1")+'<p style="margin-top:14px"><b>பாலினம்</b></p>'+row(go,gc,"b2")+'<p style="margin-top:14px"><b>குடும்பத் தலைவருடன் உறவு முறை</b></p><p class="mut">தலைவர் தவிர மற்ற உறுப்பினர்கள்: '+rt+'</p>'+relHtml;
+  $("dMar").innerHTML='<p class="mut">உயிருடன் உள்ளவர்கள் மட்டும்: '+L.length+'</p><p><b>திருமண நிலை</b></p>'+row(mo,c,"b1")+'<p style="margin-top:14px"><b>பாலினம்</b></p>'+row(go,gc,"b2");
 }
 
 function hasS(m,a,b){return!!(m[a]||m[b])}
@@ -835,19 +866,23 @@ function renderFam(){
   var fl=dfams().slice().sort(function(a,b){return String(a.head).localeCompare(String(b.head),"ta")});
   var cols=["குடும்பத் தலைவர்","அன்பியம்","அலைபேசி","உறுப்பினர்","முகவரி"],rows=fl.map(function(f){return[f.head||"",f.anbiyam||"",f.phone||"",(f.members||[]).length,f.addr||""]});
   X.fam={h:cols,r:rows};
-  $("dFamB").innerHTML=tbl(cols,rows,fl.map(function(f){return f.id}));
+  ptSet("fam",$("dFamB"),cols,rows,fl.map(function(f){return f.id}),true);
 }
 function renderSearch(){
   var q=$("dSq").value.trim().toLowerCase(),qd=q.replace(/\D/g,"");
   var cols=["பெயர்","பாலினம்","அகவை","நிலை","அன்பியம்","குடும்பத் தலைவர்","அலைபேசி"];
-  if(q.length<2){$("dSB").innerHTML='<p class="mut">குறைந்தது 2 எழுத்துகளை உள்ளிடவும் (பெயர் / தலைவர் / அன்பியம் / முகவரி / எண்).</p>';X.s={h:cols,r:[]};return}
+  var sa=$("dSa").value;
+  if(q.length<2&&!sa){$("dSB").innerHTML='<p class="mut">குறைந்தது 2 எழுத்துகளை உள்ளிடவும் அல்லது அன்பியத்தைத் தேர்ந்தெடுக்கவும்.</p>';X.s={h:cols,r:[]};return}
   var res=flat(dfams()).filter(function(x){
+    if(sa&&akey(x.f)!==sa)return false;
+    if(q.length<2)return true;
     var s=[x.m.name,x.f.head,x.f.anbiyam,x.f.addr].join(" ").toLowerCase();
     return s.indexOf(q)>-1||(qd.length>=3&&String(x.f.phone||"").replace(/\D/g,"").indexOf(qd)>-1);
   });
   var rows=res.map(function(x){return[x.m.name||"",x.m.gender||"",x.age==null?"":x.age,x.m.status||"",x.f.anbiyam||"",x.f.head||"",x.f.phone||""]});
   X.s={h:cols,r:rows};
-  $("dSB").innerHTML='<p class="mut">கிடைத்தவை: '+rows.length+'</p>'+tbl(cols,rows,res.map(function(x){return x.f.id}),50);
+  $("dSB").innerHTML='<p class="mut">கிடைத்தவை: '+rows.length+'</p><div id="dSBt"></div>';
+  ptSet("s",$("dSBt"),cols,rows,res.map(function(x){return x.f.id}),false);
 }
 
 function updWide(){document.querySelector(".wrap").classList.toggle("wd",dashOn&&!$("vA").classList.contains("hide"))}
@@ -881,7 +916,7 @@ $("dPriv").onchange=function(){$("aDash").classList.toggle("priv",this.checked)}
 $("dRef").onclick=async function(){if(await loadAllFams())renderDash()};
 $("dPrint").onclick=function(){window.print()};
 $("dExp").onclick=function(){makeCsv(dfams(),"parish-families-"+(dashAnb?anbNameOf(dashAnb):"all")+".csv")};
-$("dEvW").onchange=renderEv;$("dFC").onchange=renderGap;$("dCF").onchange=renderGap;$("dSq").oninput=renderSearch;
+$("dEvW").onchange=renderEv;$("dFC").onchange=renderGap;$("dCF").onchange=renderGap;$("dSq").oninput=renderSearch;$("dSa").onchange=renderSearch;
 $("aDash").onclick=function(e){
   var x=e.target.closest("button[data-exp]");
   if(x){var o=X[x.dataset.exp];if(o)rowsCsv(o.h,o.r,"parish-"+x.dataset.exp+".csv");return}
@@ -1243,6 +1278,7 @@ EX["✔ சரிபார்"]="✔ Verify";EX["↺ நிலுவைக்க
 EX["← முந்தைய 10"]="← Previous 10";EX["அடுத்த 10 →"]="Next 10 →";EX["← முந்தையவை"]="← Previous";EX["அடுத்தவை →"]="Next →";
 Object.keys(EX).forEach(function(k){if(/அன்பியம்$/.test(k)&&k!=="அன்பியம்")PH.push([k,EX[k]])});
 PH.push(
+["குறைந்தது 2 எழுத்துகளை உள்ளிடவும் அல்லது அன்பியத்தைத் தேர்ந்தெடுக்கவும்.","Enter at least 2 characters or choose an Anbiyam."],["வரிசைப்படுத்து","Sort"],
 ["அன்பியத்துடன் இணைக்கப்படாத குடும்பங்கள்","Families not linked to an Anbiyam"],["இணைக்கப்படாதவை","Not linked"],
 ["பதிவுகள் அன்பியம் ID உடன் இணைக்கப்படவில்லை.","records are not linked to an Anbiyam ID."],
 ["சரிசெய்தால் இவை புதிய அன்பியங்களாகச் சேர்க்கப்படும்.","Fixing will add them as new Anbiyams."],
