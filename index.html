@@ -48,7 +48,7 @@ button.link{border:0;background:none;padding:4px 0;color:var(--err)}
 .list-item b{display:block}
 .mut{color:var(--mut);font-size:.88rem}
 .wide{overflow-x:auto;scrollbar-width:auto;scrollbar-color:var(--mut) var(--line);padding-bottom:4px}.wide::-webkit-scrollbar{height:12px}.wide::-webkit-scrollbar-track{background:var(--line);border-radius:6px}.wide::-webkit-scrollbar-thumb{background:var(--mut);border-radius:6px}
-.dt th.sortable{cursor:pointer;user-select:none}.dt th.sortable:hover{color:var(--ink)}
+.dt th.sortable{cursor:pointer;user-select:none}.dt th .si{opacity:.5;font-size:.85em;margin-left:5px}.dt th .sa{margin-left:5px;color:var(--pri)}.dt th.sortable:hover{color:var(--ink)}
 .wrap.wd{max-width:1100px}
 .langbar{display:flex;justify-content:flex-end;align-items:center;gap:6px}
 .langbar button{padding:4px 12px;font-size:.85rem}
@@ -644,7 +644,7 @@ function ptDraw(key){
     return r*t.d||a-b});
   var size=t.size,pages=Math.ceil(n/size);if(t.p>=pages)t.p=pages-1;if(t.p<0)t.p=0;
   var from=t.p*size,part=idx.slice(from,from+size);
-  var h='<div class="wide"><table class="dt"><thead><tr>'+(t.ids?'<th></th>':'')+t.cols.map(function(c,i){return'<th'+(t.sortable?' class="sortable" data-c="'+i+'" title="வரிசைப்படுத்து"':'')+'>'+esc(c)+(t.sortable&&t.c===i?(t.d>0?" ▲":" ▼"):"")+'</th>'}).join("")+'</tr></thead><tbody>';
+  var h='<div class="wide"><table class="dt"><thead><tr>'+(t.ids?'<th></th>':'')+t.cols.map(function(c,i){return'<th'+(t.sortable?' class="sortable" data-c="'+i+'" title="வரிசைப்படுத்து"':'')+'>'+esc(c)+(t.sortable?(t.c===i?'<span class="sa">'+(t.d>0?"▲":"▼")+'</span>':'<span class="si">⇅</span>'):"")+'</th>'}).join("")+'</tr></thead><tbody>';
   part.forEach(function(i){h+='<tr>'+(t.ids?'<td>'+eb(t.ids[i])+'</td>':'')+t.rows[i].map(function(c){return'<td>'+esc(c)+'</td>'}).join("")+'</tr>'});
   h+='</tbody></table></div>';
   if(n>size)h+='<div class="pager noprint"><button type="button" class="sm" data-pg="-1"'+(t.p<=0?' disabled':'')+'>← முந்தைய 10</button><span class="mut">காட்டப்படுவது '+(from+1)+'–'+(from+part.length)+' / '+n+'</span><button type="button" class="sm" data-pg="1"'+(t.p>=pages-1?' disabled':'')+'>அடுத்த 10 →</button></div>';
@@ -745,31 +745,45 @@ function renderMar(){
 }
 
 function hasS(m,a,b){return!!(m[a]||m[b])}
-function lineSvg(yrs,mn,mx){
-  if(mn>mx)return'<p class="mut">தேதி தரவு இல்லை.</p>';
-  var W=640,H=230,l=34,r=12,t=12,b=28,n=mx-mn+1,top=1,y,k;
-  for(y=mn;y<=mx;y++)(yrs[y]||[0,0,0]).forEach(function(v){top=Math.max(top,v)});
-  var px=function(y){return n>1?l+(y-mn)*(W-l-r)/(n-1):l+(W-l-r)/2},py=function(v){return t+(H-t-b)*(1-v/top)};
-  var s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="ஆண்டு வாரியான அருட்சாதனங்கள்" style="width:100%;height:auto">';
-  [0,top/2,top].forEach(function(v){s+='<line x1="'+l+'" x2="'+(W-r)+'" y1="'+py(v)+'" y2="'+py(v)+'" style="stroke:var(--line)"/><text x="'+(l-4)+'" y="'+(py(v)+4)+'" text-anchor="end" font-size="11" style="fill:var(--mut)">'+Math.round(v*10)/10+'</text>'});
-  var step=Math.ceil(n/10);
-  for(y=mn;y<=mx;y+=step)s+='<text x="'+px(y)+'" y="'+(H-8)+'" text-anchor="middle" font-size="11" style="fill:var(--mut)">'+y+'</text>';
-  var col=["var(--pri)","var(--acc)","#1f7a4d"];
-  for(k=0;k<3;k++){
-    var d="",pts="";
-    for(y=mn;y<=mx;y++){var v=(yrs[y]||[0,0,0])[k];d+=(d?"L":"M")+px(y)+" "+py(v)+" ";if(n<=40)pts+='<circle cx="'+px(y)+'" cy="'+py(v)+'" r="2.5" style="fill:'+col[k]+'"/>'}
-    s+='<path d="'+d+'" fill="none" stroke-width="2" style="stroke:'+col[k]+'"/>'+pts;
+var SACC=["#2b6cb0","#dd8a1c","#2f9e6e"],SACN=["திருமுழுக்கு","புது நன்மை","உறுதி பூசுதல்"],sacRange="10";
+function barSvg(yrs,y0,y1,tot){   /* grouped bars: one group per year, one bar per sacrament, the count printed on every bar */
+  var n=y1-y0+1,top=1,y,k;
+  for(y=y0;y<=y1;y++)(yrs[y]||[0,0,0]).forEach(function(v){top=Math.max(top,v)});
+  var st=[1,2,5,10,20,50,100,200,500,1000,2000,5000].filter(function(q){return top/q<=5})[0]||10000;
+  var tp=Math.ceil(top/st)*st,gw=n<=12?Math.max(46,Math.floor(640/n)):40,l=38,r=10,t=22,b=34,H=270,W=l+r+gw*n,bw=Math.max(7,Math.min(20,Math.floor((gw-8)/3)));
+  var py=function(v){return t+(H-t-b)*(1-v/tp)};
+  var s='<div class="wide"><svg viewBox="0 0 '+W+' '+H+'" width="'+W+'" role="img" aria-label="ஆண்டு வாரியான அருட்சாதனங்கள்" style="max-width:none;height:auto;min-width:100%">';
+  for(var v=0;v<=tp;v+=st)s+='<line x1="'+l+'" x2="'+(W-r)+'" y1="'+py(v)+'" y2="'+py(v)+'" style="stroke:var(--line)"/><text x="'+(l-5)+'" y="'+(py(v)+4)+'" text-anchor="end" font-size="11" style="fill:var(--mut)">'+v+'</text>';
+  for(y=y0;y<=y1;y++){
+    var gx=l+(y-y0)*gw,vals=yrs[y]||[0,0,0],x0=gx+(gw-bw*3)/2;
+    for(k=0;k<3;k++){
+      var h=(H-t-b)*vals[k]/tp,x=x0+k*bw;
+      s+='<rect x="'+x+'" y="'+(H-b-h)+'" width="'+(bw-1)+'" height="'+h+'" rx="2" fill="'+SACC[k]+'"><title>'+y+' · '+SACN[k]+': '+vals[k]+'</title></rect>';
+      if(vals[k]>0&&bw>=9)s+='<text x="'+(x+(bw-1)/2)+'" y="'+(H-b-h-4)+'" text-anchor="middle" font-size="'+(bw>=14?11:9)+'" font-weight="600" style="fill:var(--ink)">'+vals[k]+'</text>';
+    }
+    s+='<text x="'+(gx+gw/2)+'" y="'+(H-12)+'" text-anchor="middle" font-size="11" style="fill:var(--mut)">'+y+'</text>';
   }
-  return s+'</svg><p class="mut"><span style="color:var(--pri)">●</span> திருமுழுக்கு &nbsp; <span style="color:var(--acc)">●</span> புது நன்மை &nbsp; <span style="color:#1f7a4d">●</span> உறுதி பூசுதல்</p>';
+  s+='<line x1="'+l+'" x2="'+(W-r)+'" y1="'+(H-b)+'" y2="'+(H-b)+'" style="stroke:var(--mut)"/></svg></div>';
+  var lg='<p style="margin:8px 0">';
+  for(k=0;k<3;k++)lg+='<span style="white-space:nowrap;margin-right:14px"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:'+SACC[k]+';vertical-align:-1px"></span> '+SACN[k]+' ('+tot[k]+')</span>';
+  return lg+'</p>'+s+'<p class="mut">பட்டையின் மேல் உள்ள எண் = அந்த ஆண்டில் அந்த அருட்சாதனம் பெற்றவர்கள். மேலே அடைப்புக்குள் உள்ள எண் = தேர்ந்தெடுத்த ஆண்டுகளின் மொத்தம்.</p>';
 }
 function renderSac(){
   var L=flat(dfams()),lv=L.filter(function(x){return!x.dead});
-  var rows=[["திருமுழுக்கு","bDate","bPlace","b1"],["புது நன்மை","cDate","cPlace","b2"],["உறுதி பூசுதல்","kDate","kPlace","b3"]].map(function(s){
+  var rows=[[SACN[0],"bDate","bPlace","b1"],[SACN[1],"cDate","cPlace","b2"],[SACN[2],"kDate","kPlace","b3"]].map(function(s){
     var n=lv.filter(function(x){return hasS(x.m,s[1],s[2])}).length;return{l:s[0],v:n,t:n+" ("+pct(n,lv.length)+"%)",c:s[3]}});
   var yrs={},mn=9999,mx=0,keys=["bDate","cDate","kDate"],cy=T.getFullYear();
   L.forEach(function(x){keys.forEach(function(k,i){var d=pd(x.m[k]);if(!d)return;var y=d.getFullYear();if(y<1900||y>cy)return;(yrs[y]=yrs[y]||[0,0,0])[i]++;mn=Math.min(mn,y);mx=Math.max(mx,y)})});
-  $("dSac").innerHTML='<p class="mut">அருட்சாதனம் பெற்ற உயிருடன் உள்ளவர்கள் (மொத்தம் '+lv.length+')</p>'+hb(rows,Math.max(1,lv.length))+'<p style="margin-top:14px"><b>ஆண்டு வாரியான போக்கு (அனைத்து உறுப்பினர்)</b></p>'+lineSvg(yrs,mn,mx);
+  var h='<p class="mut">அருட்சாதனம் பெற்ற உயிருடன் உள்ளவர்கள் (மொத்தம் '+lv.length+')</p>'+hb(rows,Math.max(1,lv.length))+'<p style="margin-top:14px"><b>ஆண்டு வாரியான போக்கு (அனைத்து உறுப்பினர்)</b></p>';
+  if(mn>mx){$("dSac").innerHTML=h+'<p class="mut">தேதி தரவு இல்லை.</p>';return}
+  var span=sacRange==="all"?mx-mn+1:Math.min(+sacRange,mx-mn+1),y1=mx,y0=y1-span+1,tot=[0,0,0],tr=[];
+  for(var y=y1;y>=y0;y--){var v=yrs[y]||[0,0,0];v.forEach(function(c,i){tot[i]+=c});tr.push([y,v[0],v[1],v[2],v[0]+v[1]+v[2]])}
+  h+='<div class="tools noprint"><select id="dSacR" aria-label="ஆண்டு வரம்பு">'+[["10","கடைசி 10 ஆண்டுகள்"],["20","கடைசி 20 ஆண்டுகள்"],["30","கடைசி 30 ஆண்டுகள்"],["all","அனைத்து ஆண்டுகள்"]].map(function(o){return'<option value="'+o[0]+'"'+(o[0]===sacRange?" selected":"")+'>'+o[1]+'</option>'}).join("")+'</select></div>';
+  h+=barSvg(yrs,y0,y1,tot)+'<p style="margin-top:14px"><b>ஆண்டு வாரியான எண்ணிக்கை</b></p><div id="dSacT"></div>';
+  $("dSac").innerHTML=h;
+  ptSet("sac",$("dSacT"),["ஆண்டு"].concat(SACN,["மொத்தம்"]),tr,null,true);
 }
+$("dSac").onchange=function(e){if(e.target.id==="dSacR"){sacRange=e.target.value;renderSac()}};
 function renderGap(){
   var fc=+$("dFC").value||0,cf=+$("dCF").value||0,L=flat(dfams()).filter(function(x){return!x.dead}),g1=[],g2=[],g3=[];
   L.forEach(function(x){
@@ -882,7 +896,7 @@ function renderSearch(){
   var rows=res.map(function(x){return[x.m.name||"",x.m.gender||"",x.age==null?"":x.age,x.m.status||"",x.f.anbiyam||"",x.f.head||"",x.f.phone||""]});
   X.s={h:cols,r:rows};
   $("dSB").innerHTML='<p class="mut">கிடைத்தவை: '+rows.length+'</p><div id="dSBt"></div>';
-  ptSet("s",$("dSBt"),cols,rows,res.map(function(x){return x.f.id}),false);
+  ptSet("s",$("dSBt"),cols,rows,res.map(function(x){return x.f.id}),true);
 }
 
 function updWide(){document.querySelector(".wrap").classList.toggle("wd",dashOn&&!$("vA").classList.contains("hide"))}
@@ -1273,11 +1287,13 @@ var RX=[
 [/முதல் (\d+) பதிவுகள் மட்டும் காட்டப்பட்டுள்ளன; முழுப் பட்டியலுக்கு CSV பயன்படுத்தவும்\./g,"Only the first $1 records are shown; use CSV for the full list."]
 ];
 EX["சேகரித்தவர்"]="Collected by";EX["சேகரித்தவர் எண்"]="Collector mobile";
-EX["அன்பியங்கள்"]="Anbiyams";EX["அன்பியம் ID"]="Anbiyam ID";EX["ID இணைப்பைச் சரிசெய்"]="Fix ID links";EX["இணைக்கப்படாதவை"]="Not linked";EX["பெயர் மாற்று"]="Rename";EX["பட்டியலில் சேர்"]="Add to list";EX["அனைத்தும்"]="All";EX["அனைவரும்"]="Everyone";EX["சரிபார்ப்பு நிலுவை"]="Pending verification";EX["சரிபார்க்கப்பட்டது"]="Verified";EX["சரிபார்ப்பு நிலை"]="Verification status";
+EX["அன்பியங்கள்"]="Anbiyams";EX["ஆண்டு"]="Year";EX["கடைசி 10 ஆண்டுகள்"]="Last 10 years";EX["கடைசி 20 ஆண்டுகள்"]="Last 20 years";EX["கடைசி 30 ஆண்டுகள்"]="Last 30 years";EX["அனைத்து ஆண்டுகள்"]="All years";EX["ஆண்டு வரம்பு"]="Year range";EX["அன்பியம் ID"]="Anbiyam ID";EX["ID இணைப்பைச் சரிசெய்"]="Fix ID links";EX["இணைக்கப்படாதவை"]="Not linked";EX["பெயர் மாற்று"]="Rename";EX["பட்டியலில் சேர்"]="Add to list";EX["அனைத்தும்"]="All";EX["அனைவரும்"]="Everyone";EX["சரிபார்ப்பு நிலுவை"]="Pending verification";EX["சரிபார்க்கப்பட்டது"]="Verified";EX["சரிபார்ப்பு நிலை"]="Verification status";
 EX["✔ சரிபார்"]="✔ Verify";EX["↺ நிலுவைக்கு மாற்று"]="↺ Mark pending";EX["தேடு"]="Search";EX["மீட்டெடு"]="Restore";EX["நீக்கப்பட்டவை"]="Deleted";EX["மாற்றப் பதிவு"]="Change Log";
 EX["← முந்தைய 10"]="← Previous 10";EX["அடுத்த 10 →"]="Next 10 →";EX["← முந்தையவை"]="← Previous";EX["அடுத்தவை →"]="Next →";
 Object.keys(EX).forEach(function(k){if(/அன்பியம்$/.test(k)&&k!=="அன்பியம்")PH.push([k,EX[k]])});
 PH.push(
+["பட்டையின் மேல் உள்ள எண் = அந்த ஆண்டில் அந்த அருட்சாதனம் பெற்றவர்கள். மேலே அடைப்புக்குள் உள்ள எண் = தேர்ந்தெடுத்த ஆண்டுகளின் மொத்தம்.","The number on each bar = people who received that sacrament that year. The number in brackets above = total for the selected years."],
+["ஆண்டு வாரியான எண்ணிக்கை","Year-wise count"],
 ["குறைந்தது 2 எழுத்துகளை உள்ளிடவும் அல்லது அன்பியத்தைத் தேர்ந்தெடுக்கவும்.","Enter at least 2 characters or choose an Anbiyam."],["வரிசைப்படுத்து","Sort"],
 ["அன்பியத்துடன் இணைக்கப்படாத குடும்பங்கள்","Families not linked to an Anbiyam"],["இணைக்கப்படாதவை","Not linked"],
 ["பதிவுகள் அன்பியம் ID உடன் இணைக்கப்படவில்லை.","records are not linked to an Anbiyam ID."],
