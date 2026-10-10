@@ -107,6 +107,13 @@ body.adminOnly #tF,body.adminOnly #tL{display:none}
 .vfy .kv .k{color:var(--mut)}.vfy .kv .v{word-break:break-word}
 .vfy .acts{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;margin-top:12px}
 @media print{.vfy{display:none!important}}
+.fcard{border:2px solid var(--pri);border-radius:12px;overflow:hidden;background:var(--card);color:var(--ink)}
+.fcard .fch{background:var(--pri);color:var(--on);padding:12px 14px}.fcard .fct{font-size:1.2rem;font-weight:700}.fcard .fcs{opacity:.9;font-size:.85rem}
+.fcard .fcv{display:inline-block;margin-top:6px;padding:2px 10px;border-radius:12px;background:rgba(255,255,255,.22);font-size:.8rem}
+.fcard .fcb{padding:12px 14px}.fcard .fm{border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:8px 0}.fcard .fm h3{margin:0 0 4px;font-size:.95rem;color:var(--pri)}
+.fcard .fk{display:grid;grid-template-columns:minmax(96px,38%) 1fr;gap:2px 10px;font-size:.88rem;margin:2px 0}.fcard .fk .k{color:var(--mut)}.fcard .fk .v{word-break:break-word}
+#fcm .bx{max-width:620px}#fcm label{display:block;margin-top:10px}#fcm input{width:100%}
+@media print{body.cardprint .wrap{display:none!important}body.cardprint #fcm{position:static;display:block!important;background:none;padding:0}body.cardprint #fcm .bx{box-shadow:none;max-height:none;overflow:visible;max-width:none;padding:0}.fcard .fch{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style>
 </head>
 <body class="gateMode">
@@ -115,6 +122,7 @@ body.adminOnly #tF,body.adminOnly #tL{display:none}
 <h1 id="hGate">Sentharapatti Parish Family</h1>
 <h1 id="hMain">எங்கள் பங்கு – குடும்பத் தகவல் பதிவு</h1>
 <p class="sub" id="subMain">உங்கள் குடும்பத்தின் விவரங்களை நிரப்பி சமர்ப்பிக்கவும்.</p>
+<div id="cardView" class="hide"><div id="cvBody"></div><div class="acts noprint" style="margin-top:12px"><button id="cvPrint" type="button">அச்சிடு / PDF</button></div></div>
 <div id="gate" class="card">
 <h2>தன்னார்வலர் உள்நுழைவு</h2>
 <p class="mut" style="margin:0 0 4px">அலைபேசி எண்ணையும் கடவுச்சொல்லையும் உள்ளிட்டு உள்நுழையவும். கணக்கு இல்லையெனில் நிர்வாகியைத் தொடர்பு கொள்ளவும்.</p>
@@ -295,6 +303,16 @@ body.adminOnly #tF,body.adminOnly #tL{display:none}
 </div>
 <div id="wait" class="wait" role="alert" aria-live="assertive"><div class="bx"><div class="spin"></div><div id="waitTxt"></div></div></div>
 
+<div id="fcm" class="vfy" role="dialog" aria-modal="true"><div class="bx">
+<div id="fcCard"></div>
+<div class="noprint">
+<div id="fcMsg"></div>
+<label for="fcLink">இணைப்பு</label><input id="fcLink" type="text" readonly>
+<label for="fcNum">அலைபேசி எண் (WhatsApp / SMS அனுப்ப)</label><input id="fcNum" type="tel" inputmode="numeric">
+<div class="acts" style="justify-content:flex-start"><button id="fcWa" type="button" class="p">WhatsApp</button><button id="fcSms" type="button">SMS</button><button id="fcCopy" type="button">இணைப்பை நகலெடு</button><button id="fcPrint" type="button">அச்சிடு / PDF</button></div>
+<p class="mut" style="margin:10px 0 0">இந்த இணைப்பை வைத்திருப்பவர் இந்தக் குடும்ப அட்டையைப் பார்க்கலாம். 'புதிய இணைப்பு' பழைய இணைப்பைச் செயலிழக்கச் செய்யும்.</p>
+<div class="acts"><button id="fcNew" type="button">புதிய இணைப்பு</button><button id="fcClose" type="button">மூடு</button></div>
+</div></div></div>
 <script>
 var SCRIPT_URL="https://script.google.com/macros/s/AKfycbwQYgBjSGOEVX5QlNNC-p6AnnLWWr2TcNKQcL4onNK_pm_S3UNnwW2rnrShJx8DGLrW6A/exec";
 var F=[["name","முழு பெயர்","text"],["gender","பாலினம்","sel",["ஆண்","பெண்","மற்றவை"]],["rel","குடும்பத் தலைவருடன் உறவு முறை","combo"],["status","உறுப்பினர் நிலை","sel",["உயிருடன்","இறந்தவர்"]],["dDate","இறந்த தேதி","date"],["dob","பிறந்த தேதி","date"],["pob","பிறந்த இடம்","text"],["bDate","திருமுழுக்கு பெற்ற தேதி","date"],["bPlace","திருமுழுக்கு பெற்ற பங்கு / இடம்","text"],["cDate","புது நன்மை பெற்ற தேதி","date"],["cPlace","புது நன்மை பெற்ற பங்கு / இடம்","text"],["kDate","உறுதி பூசுதல் பெற்ற தேதி","date"],["kPlace","உறுதி பூசுதல் பெற்ற பங்கு / இடம்","text"],["marital","திருமண நிலை","sel",["திருமணமாகாதவர்","திருமணமானவர்","விதவை / மனைவியை இழந்தவர்","துறவறம்"]],["mDate","திருமண / துறவற தேதி","date"],["mPlace","திருமணம் / துறவற இடம்","text"]];
@@ -570,7 +588,7 @@ function renderAdmin(){
   $("alist").innerHTML=pageFams.length?pageFams.map(function(f){
     var ms=f.members||[],dead=ms.filter(function(x){return x.status===DEAD}).length,v=f.ver==="Verified";
     return '<div class="list-item"><b>'+esc(f.head)+'</b> '+verBadge(f)+'<span class="mut">'+esc(f.anbiyam)+' · '+esc(f.phone||"")+' · உறுப்பினர்கள்: '+ms.length+(dead?' (இறந்தவர்: '+dead+')':'')+'</span>'+(f.addr?'<div class="mut">'+esc(f.addr)+'</div>':'')+(f.colName?'<div class="mut">சேகரித்தவர்: '+esc(f.colName)+(f.colPhone?' · '+esc(f.colPhone):'')+(f.colDate?' · '+esc(f.colDate):'')+'</div>':'')+(v&&f.verAt?'<div class="mut">சரிபார்த்தவர்: '+esc(f.verBy||"Admin")+' · '+esc(f.verAt)+'</div>':'')+
-      '<button type="button" data-act="aver" data-id="'+esc(f.id)+'" data-st="'+(v?"Pending":"Verified")+'" style="'+BS+'">'+(v?"↺ நிலுவைக்கு மாற்று":"✔ சரிபார்")+'</button><button type="button" data-act="aedit" data-id="'+esc(f.id)+'" style="'+BS+'">திருத்து</button><button type="button" data-act="adel" data-id="'+esc(f.id)+'" style="'+BS+'">நீக்கு</button></div>';
+      '<button type="button" data-act="aver" data-id="'+esc(f.id)+'" data-st="'+(v?"Pending":"Verified")+'" style="'+BS+'">'+(v?"↺ நிலுவைக்கு மாற்று":"✔ சரிபார்")+'</button><button type="button" data-act="acard" data-id="'+esc(f.id)+'" style="'+BS+'">📇 குடும்ப அட்டை</button><button type="button" data-act="aedit" data-id="'+esc(f.id)+'" style="'+BS+'">திருத்து</button><button type="button" data-act="adel" data-id="'+esc(f.id)+'" style="'+BS+'">நீக்கு</button></div>';
   }).join(""):'<p class="mut">இல்லை.</p>';
   $("apInfo").textContent="காட்டப்படுவது "+(PG.total?PG.off+1:0)+"–"+(PG.off+pageFams.length)+" / "+PG.total;
   $("apPrev").disabled=PG.off<=0;$("apNext").disabled=PG.off+PG.limit>=PG.total;
@@ -649,6 +667,7 @@ $("items").onclick=function(e){var b=e.target.closest("button[data-act]");if(!b)
 $("alist").onclick=function(e){var b=e.target.closest("button[data-act]");if(!b)return;
   if(b.dataset.act==="aedit"){var f=pageFams.find(function(r){return r.id===b.dataset.id});if(f)startEdit(f,"admin","")}
   else if(b.dataset.act==="adel")adminDelete(b.dataset.id);
+  else if(b.dataset.act==="acard")openCard(b.dataset.id);
   else if(b.dataset.act==="aver"){if(b.dataset.st==="Verified")openVerify(b.dataset.id);else adminVerify(b.dataset.id,b.dataset.st)}};
 $("q").oninput=renderList;
 $("adl").onclick=async function(){if(await loadAllFams())makeCsv(fams,"parish-families-all.csv")};
@@ -1226,6 +1245,65 @@ $("cPrev").onclick=function(){loadChg(Math.max(0,CH.off-CH.lim))};$("cNext").onc
 $("apPrev").onclick=function(){loadPage(Math.max(0,PG.off-PG.limit))};$("apNext").onclick=function(){loadPage(PG.off+PG.limit)};
 $("aVer").onchange=function(){loadPage(0)};$("aAnbF").onchange=function(){loadPage(0)};$("aSearch").onclick=function(){loadPage(0)};$("aq").onkeydown=function(e){if(e.key==="Enter")loadPage(0)};
 
+/* ================= FAMILY CARD (share by WhatsApp / SMS link) ================= */
+var CC="91",FC={id:"",f:null};   /* CC = country code added to 10-digit mobile numbers */
+function intlNum(v){var d=String(v||"").replace(/\D/g,"").replace(/^0+/,"");return d.length===10?CC+d:d}
+function cardUrl(id,key){return location.href.split("#")[0]+"#card="+id+"."+key}
+function cardMsg(head,link){return"வணக்கம்! "+head+" குடும்ப அட்டை / Family card: "+link}
+function waUrl(num,msg){return"https://wa.me/"+(num||"")+"?text="+encodeURIComponent(msg)}
+function smsUrl(num,msg){return"sms:"+(num?"+"+num:"")+"?&body="+encodeURIComponent(msg)}
+function fk(k,vHtml){return vHtml?'<div class="fk"><span class="k">'+esc(k)+'</span><span class="v">'+vHtml+'</span></div>':""}
+function cardHtml(c){   /* the card itself - used by the admin preview and by the public link */
+  var loc=String(c.loc||""),ms=c.members||[];
+  var h='<div class="fcard"><div class="fch"><div class="fct">குடும்ப அட்டை</div><div class="fcs">'+esc($("hGate").textContent)+'</div>'+(c.ver==="Verified"?'<span class="fcv">✔ சரிபார்க்கப்பட்டது</span>':'')+'</div><div class="fcb">';
+  h+=fk("குடும்பத் தலைவர்",esc(c.head))+fk("அன்பியம்",esc(c.anbiyam))+fk("அலைபேசி எண்",esc(c.phone))+fk("முகவரி",esc(c.addr))
+    +fk("இருப்பிடம்",/^https?:\/\//i.test(loc)?'<a href="'+escA(loc)+'" target="_blank" rel="noopener">📍 Google Maps</a>':esc(loc))+fk("உறுப்பினர்கள்",String(ms.length));
+  ms.forEach(function(m,i){
+    h+='<div class="fm"><h3>'+(i+1)+'. '+esc(m.name||"")+(m.rel?' — '+esc(relLabel(m.rel)):(i===0?' — குடும்பத் தலைவர்':''))+'</h3>';
+    F.forEach(function(x){var v=m[x[0]];if(!v||x[0]==="name"||x[0]==="rel")return;if(x[2]==="date"){var d=pd(v);v=d?fd(d):v}h+=fk(x[1],esc(v))});
+    h+='</div>';
+  });
+  return h+'</div></div>';
+}
+function fcm(t,c){msgBox("fcMsg",t,c)}
+async function openCard(id,regen){
+  var f=pageFams.find(function(r){return r.id===id});if(!f)return;
+  var j=await call({action:"cardLink",admin:adminPw,id:id,regen:!!regen});
+  if(!(j&&j.ok)){aMsg(errText(j),"bad");return}
+  FC={id:id,f:f};
+  $("fcCard").innerHTML=cardHtml(f);$("fcLink").value=cardUrl(id,j.key);$("fcNum").value=f.phone||"";
+  fcm(regen?"புதிய இணைப்பு உருவாக்கப்பட்டது. பழைய இணைப்பு இனி செயல்படாது.":"","ok");
+  $("fcm").classList.add("on");$("fcWa").focus();
+}
+function closeCard(){$("fcm").classList.remove("on")}
+function fcShare(kind){
+  var msg=cardMsg(FC.f.head,$("fcLink").value),num=intlNum($("fcNum").value);
+  if(kind==="wa")window.open(waUrl(num,msg),"_blank","noopener");else location.href=smsUrl(num,msg);
+}
+$("fcWa").onclick=function(){fcShare("wa")};$("fcSms").onclick=function(){fcShare("sms")};
+$("fcCopy").onclick=function(){
+  var v=$("fcLink").value;function done(){fcm("இணைப்பு நகலெடுக்கப்பட்டது.","ok")}
+  function fb(){$("fcLink").select();try{document.execCommand("copy");done()}catch(e){}}
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(v).then(done,fb);else fb();
+};
+$("fcPrint").onclick=function(){document.body.classList.add("cardprint");window.print();document.body.classList.remove("cardprint")};
+$("fcNew").onclick=function(){if(FC.id&&confirm("புதிய இணைப்பை உருவாக்கினால் பழைய இணைப்பு செயல்படாது. தொடரவா?"))openCard(FC.id,true)};
+$("fcClose").onclick=closeCard;
+$("fcm").onclick=function(e){if(e.target===this)closeCard()};
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&$("fcm").classList.contains("on"))closeCard()});
+window.addEventListener("afterprint",function(){document.body.classList.remove("cardprint")});
+$("cvPrint").onclick=function(){window.print()};
+function cardBoot(){   /* a family opened its card link: show ONLY the card (no login) */
+  var m=/^#card=([a-z0-9]+)\.([a-f0-9]{32})$/.exec(location.hash);if(!m)return false;
+  ["hGate","hMain","subMain","gate","app","vA"].forEach(function(i){var e=$(i);if(e)e.classList.add("hide")});
+  document.body.classList.remove("gateMode");$("cardView").classList.remove("hide");
+  $("cvBody").innerHTML='<p class="mut">சரிபார்க்கிறது…</p>';
+  call({action:"cardGet",id:m[1],key:m[2]}).then(function(j){
+    $("cvBody").innerHTML=(j&&j.ok)?cardHtml(j.card):'<p class="msg bad">'+esc(j&&j.error==="network"?errText(j):"இணைப்பு செல்லாது அல்லது புதுப்பிக்கப்பட்டுள்ளது.")+'</p>';
+  });
+  return true;
+}
+
 /* ================= LANGUAGE (Tamil / English) ================= */
 var LANG="ta";try{LANG=localStorage.getItem("parishLang")==="en"?"en":"ta"}catch(e){}
 var TAM=/[\u0B80-\u0BFF]/;
@@ -1359,11 +1437,16 @@ var RX=[
 [/முதல் (\d+) பதிவுகள் மட்டும் காட்டப்பட்டுள்ளன; முழுப் பட்டியலுக்கு CSV பயன்படுத்தவும்\./g,"Only the first $1 records are shown; use CSV for the full list."]
 ];
 EX["சேகரித்தவர்"]="Collected by";EX["சேகரித்தவர் எண்"]="Collector mobile";
-EX["அன்பியங்கள்"]="Anbiyams";EX["இன்றைய நிகழ்வுகள்"]="Today's Events";EX["ஆண்டு"]="Year";EX["கடைசி 10 ஆண்டுகள்"]="Last 10 years";EX["கடைசி 20 ஆண்டுகள்"]="Last 20 years";EX["கடைசி 30 ஆண்டுகள்"]="Last 30 years";EX["அனைத்து ஆண்டுகள்"]="All years";EX["ஆண்டு வரம்பு"]="Year range";EX["அன்பியம் ID"]="Anbiyam ID";EX["ID இணைப்பைச் சரிசெய்"]="Fix ID links";EX["இணைக்கப்படாதவை"]="Not linked";EX["பெயர் மாற்று"]="Rename";EX["பட்டியலில் சேர்"]="Add to list";EX["அனைத்தும்"]="All";EX["அனைவரும்"]="Everyone";EX["சரிபார்ப்பு நிலுவை"]="Pending verification";EX["சரிபார்க்கப்பட்டது"]="Verified";EX["சரிபார்ப்பு நிலை"]="Verification status";
+EX["அன்பியங்கள்"]="Anbiyams";EX["குடும்ப அட்டை"]="Family Card";EX["📇 குடும்ப அட்டை"]="📇 Family card";EX["இணைப்பை நகலெடு"]="Copy link";EX["அச்சிடு / PDF"]="Print / PDF";EX["புதிய இணைப்பு"]="New link";if(!EX["மூடு"])EX["மூடு"]="Close";if(!EX["இணைப்பு"])EX["இணைப்பு"]="Link";EX["இன்றைய நிகழ்வுகள்"]="Today's Events";EX["ஆண்டு"]="Year";EX["கடைசி 10 ஆண்டுகள்"]="Last 10 years";EX["கடைசி 20 ஆண்டுகள்"]="Last 20 years";EX["கடைசி 30 ஆண்டுகள்"]="Last 30 years";EX["அனைத்து ஆண்டுகள்"]="All years";EX["ஆண்டு வரம்பு"]="Year range";EX["அன்பியம் ID"]="Anbiyam ID";EX["ID இணைப்பைச் சரிசெய்"]="Fix ID links";EX["இணைக்கப்படாதவை"]="Not linked";EX["பெயர் மாற்று"]="Rename";EX["பட்டியலில் சேர்"]="Add to list";EX["அனைத்தும்"]="All";EX["அனைவரும்"]="Everyone";EX["சரிபார்ப்பு நிலுவை"]="Pending verification";EX["சரிபார்க்கப்பட்டது"]="Verified";EX["சரிபார்ப்பு நிலை"]="Verification status";
 EX["✔ சரிபார்"]="✔ Verify";EX["↺ நிலுவைக்கு மாற்று"]="↺ Mark pending";EX["தேடு"]="Search";EX["மீட்டெடு"]="Restore";EX["நீக்கப்பட்டவை"]="Deleted";EX["மாற்றப் பதிவு"]="Change Log";
 EX["← முந்தைய 10"]="← Previous 10";EX["அடுத்த 10 →"]="Next 10 →";EX["← முந்தையவை"]="← Previous";EX["அடுத்தவை →"]="Next →";
 Object.keys(EX).forEach(function(k){if(/அன்பியம்$/.test(k)&&k!=="அன்பியம்")PH.push([k,EX[k]])});
 PH.push(
+["இந்த இணைப்பை வைத்திருப்பவர் இந்தக் குடும்ப அட்டையைப் பார்க்கலாம். 'புதிய இணைப்பு' பழைய இணைப்பைச் செயலிழக்கச் செய்யும்.","Anyone with this link can view this family card. 'New link' stops the old link from working."],
+["புதிய இணைப்பை உருவாக்கினால் பழைய இணைப்பு செயல்படாது. தொடரவா?","If you create a new link, the old link will stop working. Continue?"],
+["புதிய இணைப்பு உருவாக்கப்பட்டது. பழைய இணைப்பு இனி செயல்படாது.","New link created. The old link no longer works."],
+["இணைப்பு நகலெடுக்கப்பட்டது.","Link copied."],["இணைப்பு செல்லாது அல்லது புதுப்பிக்கப்பட்டுள்ளது.","This link is invalid or has been replaced."],
+["அலைபேசி எண் (WhatsApp / SMS அனுப்ப)","Mobile number (to send by WhatsApp / SMS)"],
 ["நேரம் / அலைபேசி / பெயர் தலைப்பைத் தொட்டால் வரிசைப்படுத்தலாம். சமீபத்திய 1000 பதிவுகள் வரை.","Tap Time / Mobile / Name to sort. Latest 1000 entries."],
 ["இன்றைய தேதி:","Today's date:"],["இன்று நிகழ்வுகள் இல்லை.","No events today."],["இன்றைய நிகழ்வுகள்","Today's Events"],
 ["பட்டையின் மேல் உள்ள எண் = அந்த ஆண்டில் அந்த அருட்சாதனம் பெற்றவர்கள். மேலே அடைப்புக்குள் உள்ள எண் = தேர்ந்தெடுத்த ஆண்டுகளின் மொத்தம்.","The number on each bar = people who received that sacrament that year. The number in brackets above = total for the selected years."],
@@ -1402,6 +1485,7 @@ PH.push(
 PH.push(["சரிபார்ப்பு – முழு விவரம்","Verification – full details"],
 ["இந்த விவரங்கள் சரியாக உள்ளன என உறுதி செய்து, 'சரிபார்க்கப்பட்டது' எனக் குறிக்கவா?","Confirm that these details are correct and mark the record as Verified?"],
 ["✔ ஆம், சரிபார்க்கப்பட்டது எனக் குறி","✔ Yes, mark as Verified"]);
+PH.sort(function(a,b){return b[0].length-a[0].length});
 PH.sort(function(a,b){return b[0].length-a[0].length});
 function seg(x){
   if(EX.hasOwnProperty(x))return EX[x];
@@ -1476,7 +1560,7 @@ function getLoc(){
 function openLoc(){var v=$("loc").value.trim();if(/^https?:\/\//i.test(v))window.open(v,"_blank","noopener");else $("locMsg").textContent="முதலில் இருப்பிடத்தைப் பதிவு செய்யவும் அல்லது இணைப்பை ஒட்டவும்."}
 $("locBtn").onclick=getLoc;$("locOpen").onclick=openLoc;
 
-addMember();renderList();setLang(LANG);boot();
+addMember();renderList();setLang(LANG);if(!cardBoot())boot();
 </script>
 </body>
 </html>
