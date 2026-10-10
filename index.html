@@ -169,7 +169,7 @@ body.adminOnly #tF,body.adminOnly #tL{display:none}
 <button id="aBack" class="link" type="button" style="margin-top:10px;color:var(--mut)">← தன்னார்வலர் உள்நுழைவு</button>
 </div>
 <div id="aBody" class="hide">
-<div class="tabs noprint wrapt"><button id="sA" class="on" type="button">பதிவுகள்</button><button id="sD" type="button">டாஷ்போர்டு</button><button id="sV" type="button">தன்னார்வலர்கள்</button><button id="sN" type="button">அன்பியங்கள்</button><button id="sB" type="button">நீக்கப்பட்டவை</button><button id="sC" type="button">மாற்றப் பதிவு</button><button id="alogout" type="button">வெளியேறு</button></div>
+<div class="tabs noprint wrapt"><button id="sA" class="on" type="button">பதிவுகள்</button><button id="sD" type="button">டாஷ்போர்டு</button><button id="sH" type="button">உள்நுழைவு வரலாறு</button><button id="sE" type="button">இன்றைய நிகழ்வுகள்</button><button id="sV" type="button">தன்னார்வலர்கள்</button><button id="sN" type="button">அன்பியங்கள்</button><button id="sB" type="button">நீக்கப்பட்டவை</button><button id="sC" type="button">மாற்றப் பதிவு</button><button id="alogout" type="button">வெளியேறு</button></div>
 <div id="aRec">
 <div class="card">
 <h2>அனைத்துப் பதிவுகள் (<span id="acnt">0</span>)</h2>
@@ -201,8 +201,13 @@ body.adminOnly #tF,body.adminOnly #tL{display:none}
 <p class="mut">கடவுச்சொல் இங்கே ஒரு முறை மட்டுமே தெரியும்; சேர்த்த பின் தன்னார்வலரிடம் தெரிவிக்கவும். மறந்துவிட்டால் "கடவுச்சொல் மாற்று" மூலம் புதியதை அமைக்கலாம்.</p>
 </details>
 <div id="vList"></div></div>
-<div class="card"><div class="hd"><h2>உள்நுழைவு வரலாறு</h2><span class="tools"><select id="vlWho" aria-label="உள்நுழைவு வரலாறு"><option value="">அனைவரும்</option><option value="admin">நிர்வாகி</option><option value="vol">தன்னார்வலர்கள்</option></select><button id="vlCsv" type="button" class="sm">CSV</button></span></div><div id="vLog"></div></div>
+
 </div>
+<div id="aHist" class="hide"><div class="card"><div class="hd"><h2>உள்நுழைவு வரலாறு</h2><span class="tools"><select id="vlWho" aria-label="உள்நுழைவு வரலாறு"><option value="">அனைவரும்</option><option value="admin">நிர்வாகி</option><option value="vol">தன்னார்வலர்கள்</option></select><button id="lRef" type="button" class="sm">⟳ புதுப்பி</button><button id="vlCsv" type="button" class="sm">CSV</button></span></div>
+<p class="mut" style="margin:0 0 8px">நேரம் / அலைபேசி / பெயர் தலைப்பைத் தொட்டால் வரிசைப்படுத்தலாம். சமீபத்திய 1000 பதிவுகள் வரை.</p>
+<div id="vLog"></div></div></div>
+<div id="aToday" class="hide"><div class="card"><div class="hd"><h2>இன்றைய நிகழ்வுகள்</h2><button id="eRef" type="button" class="sm">⟳ புதுப்பி</button></div>
+<p class="mut" id="eDate" style="margin:0 0 8px"></p><div id="eBody"></div></div></div>
 <div id="aAnb" class="hide"><div class="card"><div class="hd"><h2>அன்பியங்கள் (<span id="ncnt">0</span>)</h2><button id="nRef" type="button" class="sm">⟳ புதுப்பி</button></div>
 <p class="mut" style="margin:0 0 8px">செயலிழக்கச் செய்தால் புதிய பதிவுகளில் அந்தப் பெயர் தோன்றாது; ஏற்கனவே உள்ள பதிவுகள் மாறாது.</p>
 <div id="nMsg"></div>
@@ -625,7 +630,7 @@ function tbl(cols,rows,ids,cap){
 var PT={},PSIZE=10;
 function ptSet(key,box,cols,rows,ids,sortable){   /* paged table: 10 rows per page, optional click-to-sort headers; edit button first */
   var o=PT[key]||(PT[key]={p:0,c:-1,d:1});
-  o.box=box;o.cols=cols;o.rows=rows;o.ids=ids;o.sortable=!!sortable;o.p=0;o.size=PSIZE;
+  o.box=box;o.cols=cols;o.rows=rows;o.ids=ids;o.sortable=!!sortable;o.sc=Array.isArray(sortable)?sortable:null;o.p=0;o.size=PSIZE;
   if(!box.__pt){box.__pt=1;box.addEventListener("click",function(e){
     var th=e.target.closest("th[data-c]"),pg=e.target.closest("button[data-pg]");
     if(th){var c=+th.dataset.c;if(o.c===c)o.d=-o.d;else{o.c=c;o.d=1}o.p=0;ptDraw(key)}
@@ -644,7 +649,7 @@ function ptDraw(key){
     return r*t.d||a-b});
   var size=t.size,pages=Math.ceil(n/size);if(t.p>=pages)t.p=pages-1;if(t.p<0)t.p=0;
   var from=t.p*size,part=idx.slice(from,from+size);
-  var h='<div class="wide"><table class="dt"><thead><tr>'+(t.ids?'<th></th>':'')+t.cols.map(function(c,i){return'<th'+(t.sortable?' class="sortable" data-c="'+i+'" title="வரிசைப்படுத்து"':'')+'>'+esc(c)+(t.sortable?(t.c===i?'<span class="sa">'+(t.d>0?"▲":"▼")+'</span>':'<span class="si">⇅</span>'):"")+'</th>'}).join("")+'</tr></thead><tbody>';
+  var h='<div class="wide"><table class="dt"><thead><tr>'+(t.ids?'<th></th>':'')+t.cols.map(function(c,i){var sx=t.sortable&&(!t.sc||t.sc.indexOf(i)>-1);return'<th'+(sx?' class="sortable" data-c="'+i+'" title="வரிசைப்படுத்து"':'')+'>'+esc(c)+(sx?(t.c===i?'<span class="sa">'+(t.d>0?"▲":"▼")+'</span>':'<span class="si">⇅</span>'):"")+'</th>'}).join("")+'</tr></thead><tbody>';
   part.forEach(function(i){h+='<tr>'+(t.ids?'<td>'+eb(t.ids[i])+'</td>':'')+t.rows[i].map(function(c){return'<td>'+esc(c)+'</td>'}).join("")+'</tr>'});
   h+='</tbody></table></div>';
   if(n>size)h+='<div class="pager noprint"><button type="button" class="sm" data-pg="-1"'+(t.p<=0?' disabled':'')+'>← முந்தைய 10</button><span class="mut">காட்டப்படுவது '+(from+1)+'–'+(from+part.length)+' / '+n+'</span><button type="button" class="sm" data-pg="1"'+(t.p>=pages-1?' disabled':'')+'>அடுத்த 10 →</button></div>';
@@ -805,8 +810,8 @@ function renderGap(){
 
 function nextOcc(d){var n=new Date(T.getFullYear(),d.getMonth(),d.getDate());if(n<T)n=new Date(T.getFullYear()+1,d.getMonth(),d.getDate());return n}
 function dayTxt(n){return n===0?"இன்று":n===1?"நாளை":n+" நாட்களில்"}
-function renderEv(){
-  var w=$("dEvW").value,L=flat(dfams()),ev={b:[],w:[],m:[]},wed={};
+function calcEv(L,w){   /* birthdays / wedding anniversaries / death anniversaries that fall inside the window (w = days or "month") */
+  var ev={b:[],w:[],m:[]},wed={};
   var inWin=function(o){var days=Math.round((o-T)/864e5);if(w==="month")return(o.getMonth()===T.getMonth()&&o.getFullYear()===T.getFullYear())?days:-1;return days<=+w?days:-1};
   L.forEach(function(x){
     var m=x.m,d;
@@ -817,6 +822,10 @@ function renderEv(){
     if(x.dead&&(d=pd(m.dDate))){var o2=nextOcc(d),y2=o2.getFullYear()-d.getFullYear(),dy2=inWin(o2);if(dy2>=0&&y2>0)ev.m.push({days:dy2,o:o2,who:m.name||"",f:x.f,info:y2+"-ஆம் ஆண்டு நினைவு"})}
   });
   Object.keys(wed).forEach(function(k){var e=wed[k],o=nextOcc(e.d),y=o.getFullYear()-e.d.getFullYear(),dy=inWin(o);if(dy>=0&&y>0)ev.w.push({days:dy,o:o,who:e.n.join(" & "),f:e.f,info:y+"-ஆம் ஆண்டு திருமண நாள்"})});
+  return ev;
+}
+function renderEv(){
+  var ev=calcEv(flat(dfams()),$("dEvW").value);
   var cols=["தேதி","எப்போது","பெயர்","அன்பியம்","குடும்பத் தலைவர்","அலைபேசி","விவரம்"],h="",csv=[];
   [["🎂 பிறந்த நாள்","b"],["💍 திருமண நாள்","w"],["🕯 நினைவு நாள் (இறந்தவர்)","m"]].forEach(function(s){
     var a=ev[s[1]].sort(function(p,q){return p.days-q.days||String(p.who).localeCompare(String(q.who),"ta")});
@@ -828,6 +837,18 @@ function renderEv(){
   $("dEvB").innerHTML=h;
 }
 
+function renderToday(){   /* every family (not the dashboard filter): only events that fall TODAY */
+  T=today0();
+  var ev=calcEv(flat(fams),"0"),cols=["பெயர்","அன்பியம்","குடும்பத் தலைவர்","அலைபேசி","விவரம்"],h="",tot=0;
+  $("eDate").textContent="இன்றைய தேதி: "+p2(T.getDate())+"-"+p2(T.getMonth()+1)+"-"+T.getFullYear();
+  [["🎂 பிறந்த நாள்","b"],["💍 திருமண நாள்","w"],["🕯 நினைவு நாள் (இறந்தவர்)","m"]].forEach(function(s){
+    var a=ev[s[1]].filter(function(e){return e.days===0}).sort(function(p,q){return String(p.who).localeCompare(String(q.who),"ta")});tot+=a.length;
+    h+='<p style="margin:12px 0 4px"><b>'+s[0]+' ('+a.length+')</b></p>'+(a.length?tbl(cols,a.map(function(e){return[e.who,e.f.anbiyam||"",e.f.head||"",e.f.phone||"",e.info]}),a.map(function(e){return e.f.id})):'<p class="mut">இல்லை.</p>');
+  });
+  $("eBody").innerHTML=tot?h:'<p class="mut">இன்று நிகழ்வுகள் இல்லை.</p>'+h;
+}
+$("eRef").onclick=async function(){if(await loadAllFams())renderToday()};
+$("aToday").onclick=function(e){var b=e.target.closest("button[data-act=dedit]");if(!b)return;var f=fams.find(function(r){return r.id===b.dataset.id});if(f)startEdit(f,"admin","")};
 function renderQ(){
   var fl=dfams(),L=flat(fl),NA=function(s){return!String(s||"").trim()};
   var DL={};F.forEach(function(f){DL[f[0]]=f[1]});
@@ -914,17 +935,19 @@ async function changePw(){
 $("pwBtn").onclick=changePw;
 async function sub(n){
   dashOn=(n==="D");
-  [["A","aRec"],["D","aDash"],["V","aVol"],["N","aAnb"],["B","aBin"],["C","aLog"]].forEach(function(p){$(p[1]).classList.toggle("hide",n!==p[0]);$("s"+p[0]).classList.toggle("on",n===p[0])});
+  [["A","aRec"],["D","aDash"],["V","aVol"],["H","aHist"],["E","aToday"],["N","aAnb"],["B","aBin"],["C","aLog"]].forEach(function(p){$(p[1]).classList.toggle("hide",n!==p[0]);$("s"+p[0]).classList.toggle("on",n===p[0])});
   updWide();
   if(!adminPw)return;
   if(n==="A"&&pageStale){pageStale=false;loadPage()}
   if(n==="D"){if(!famsFresh)await loadAllFams();if(dashOn)renderDash()}   /* the dashboard needs every record, so it is loaded only when opened */
   if(n==="V")loadVols();
+  if(n==="H")loadLogs();
+  if(n==="E"){if(!famsFresh)await loadAllFams();renderToday()}
   if(n==="N")loadAnbAdmin();
   if(n==="B")loadBin();
   if(n==="C")loadChg(0);
 }
-$("sA").onclick=function(){sub("A")};$("sD").onclick=function(){sub("D")};$("sV").onclick=function(){sub("V")};$("sN").onclick=function(){sub("N")};$("sB").onclick=function(){sub("B")};$("sC").onclick=function(){sub("C")};
+$("sA").onclick=function(){sub("A")};$("sD").onclick=function(){sub("D")};$("sV").onclick=function(){sub("V")};$("sH").onclick=function(){sub("H")};$("sE").onclick=function(){sub("E")};$("sN").onclick=function(){sub("N")};$("sB").onclick=function(){sub("B")};$("sC").onclick=function(){sub("C")};
 $("dAnb").onchange=function(){dashAnb=this.value;renderDash()};
 $("dPriv").onchange=function(){$("aDash").classList.toggle("priv",this.checked)};
 $("dRef").onclick=async function(){if(await loadAllFams())renderDash()};
@@ -1007,10 +1030,9 @@ function vm(t,c){msgBox("vMsg",t,c)}
 async function loadVols(){
   var j=await call({action:"volList",admin:adminPw});
   if(j&&j.ok){VOLS=j.volunteers||[];renderVols()}else vm(errText(j),"bad");
-  await loadLogs();
 }
 async function loadLogs(){
-  var k=await call({action:"volLogins",admin:adminPw,limit:300,who:$("vlWho").value});
+  var k=await call({action:"volLogins",admin:adminPw,limit:1000,who:$("vlWho").value});
   if(k&&k.ok){LOGS=k.logins||[];renderLogs()}
 }
 function renderVols(){
@@ -1022,7 +1044,7 @@ function renderVols(){
   }).join(""):'<p class="mut">இன்னும் தன்னார்வலர்கள் இல்லை.</p>';
 }
 function renderLogs(){
-  $("vLog").innerHTML=tbl(["நேரம்","அலைபேசி","பெயர்","முடிவு","சாதனம்"],LOGS,null,300);
+  ptSet("log",$("vLog"),["நேரம்","அலைபேசி","பெயர்","முடிவு","சாதனம்"],LOGS,null,[0,1,2]);   /* 10 per page; only time, mobile and name sort */
 }
 async function addVol(){
   var n=$("vName").value.trim(),m=$("vMob").value.trim(),p=$("vPw").value;
@@ -1047,7 +1069,7 @@ async function vAct(b){
     if(k&&k.ok)vm(v.name+" - புதிய கடவுச்சொல்: "+np+" (இதை அவரிடம் தெரிவிக்கவும்)","ok");else vm(errText(k),"bad");
   }
 }
-$("vAdd").onclick=addVol;$("vRef").onclick=loadVols;$("vlWho").onchange=loadLogs;
+$("vAdd").onclick=addVol;$("vRef").onclick=loadVols;$("vlWho").onchange=loadLogs;$("lRef").onclick=loadLogs;
 $("vList").onclick=function(e){var b=e.target.closest("button[data-vact]");if(b)vAct(b)};
 $("vlCsv").onclick=function(){rowsCsv(["நேரம்","அலைபேசி","பெயர்","முடிவு","சாதனம்"],LOGS,"parish-login-history.csv")};
 
@@ -1287,11 +1309,13 @@ var RX=[
 [/முதல் (\d+) பதிவுகள் மட்டும் காட்டப்பட்டுள்ளன; முழுப் பட்டியலுக்கு CSV பயன்படுத்தவும்\./g,"Only the first $1 records are shown; use CSV for the full list."]
 ];
 EX["சேகரித்தவர்"]="Collected by";EX["சேகரித்தவர் எண்"]="Collector mobile";
-EX["அன்பியங்கள்"]="Anbiyams";EX["ஆண்டு"]="Year";EX["கடைசி 10 ஆண்டுகள்"]="Last 10 years";EX["கடைசி 20 ஆண்டுகள்"]="Last 20 years";EX["கடைசி 30 ஆண்டுகள்"]="Last 30 years";EX["அனைத்து ஆண்டுகள்"]="All years";EX["ஆண்டு வரம்பு"]="Year range";EX["அன்பியம் ID"]="Anbiyam ID";EX["ID இணைப்பைச் சரிசெய்"]="Fix ID links";EX["இணைக்கப்படாதவை"]="Not linked";EX["பெயர் மாற்று"]="Rename";EX["பட்டியலில் சேர்"]="Add to list";EX["அனைத்தும்"]="All";EX["அனைவரும்"]="Everyone";EX["சரிபார்ப்பு நிலுவை"]="Pending verification";EX["சரிபார்க்கப்பட்டது"]="Verified";EX["சரிபார்ப்பு நிலை"]="Verification status";
+EX["அன்பியங்கள்"]="Anbiyams";EX["இன்றைய நிகழ்வுகள்"]="Today's Events";EX["ஆண்டு"]="Year";EX["கடைசி 10 ஆண்டுகள்"]="Last 10 years";EX["கடைசி 20 ஆண்டுகள்"]="Last 20 years";EX["கடைசி 30 ஆண்டுகள்"]="Last 30 years";EX["அனைத்து ஆண்டுகள்"]="All years";EX["ஆண்டு வரம்பு"]="Year range";EX["அன்பியம் ID"]="Anbiyam ID";EX["ID இணைப்பைச் சரிசெய்"]="Fix ID links";EX["இணைக்கப்படாதவை"]="Not linked";EX["பெயர் மாற்று"]="Rename";EX["பட்டியலில் சேர்"]="Add to list";EX["அனைத்தும்"]="All";EX["அனைவரும்"]="Everyone";EX["சரிபார்ப்பு நிலுவை"]="Pending verification";EX["சரிபார்க்கப்பட்டது"]="Verified";EX["சரிபார்ப்பு நிலை"]="Verification status";
 EX["✔ சரிபார்"]="✔ Verify";EX["↺ நிலுவைக்கு மாற்று"]="↺ Mark pending";EX["தேடு"]="Search";EX["மீட்டெடு"]="Restore";EX["நீக்கப்பட்டவை"]="Deleted";EX["மாற்றப் பதிவு"]="Change Log";
 EX["← முந்தைய 10"]="← Previous 10";EX["அடுத்த 10 →"]="Next 10 →";EX["← முந்தையவை"]="← Previous";EX["அடுத்தவை →"]="Next →";
 Object.keys(EX).forEach(function(k){if(/அன்பியம்$/.test(k)&&k!=="அன்பியம்")PH.push([k,EX[k]])});
 PH.push(
+["நேரம் / அலைபேசி / பெயர் தலைப்பைத் தொட்டால் வரிசைப்படுத்தலாம். சமீபத்திய 1000 பதிவுகள் வரை.","Tap Time / Mobile / Name to sort. Latest 1000 entries."],
+["இன்றைய தேதி:","Today's date:"],["இன்று நிகழ்வுகள் இல்லை.","No events today."],["இன்றைய நிகழ்வுகள்","Today's Events"],
 ["பட்டையின் மேல் உள்ள எண் = அந்த ஆண்டில் அந்த அருட்சாதனம் பெற்றவர்கள். மேலே அடைப்புக்குள் உள்ள எண் = தேர்ந்தெடுத்த ஆண்டுகளின் மொத்தம்.","The number on each bar = people who received that sacrament that year. The number in brackets above = total for the selected years."],
 ["ஆண்டு வாரியான எண்ணிக்கை","Year-wise count"],
 ["குறைந்தது 2 எழுத்துகளை உள்ளிடவும் அல்லது அன்பியத்தைத் தேர்ந்தெடுக்கவும்.","Enter at least 2 characters or choose an Anbiyam."],["வரிசைப்படுத்து","Sort"],
