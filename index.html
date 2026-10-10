@@ -307,14 +307,18 @@ body.adminOnly #tF,body.adminOnly #tL{display:none}
 <div id="fcCard"></div>
 <div class="noprint">
 <div id="fcMsg"></div>
+<label for="fcDays">செல்லுபடியாகும் நாட்கள்</label>
+<div class="acts" style="justify-content:flex-start;margin-top:0;align-items:center"><input id="fcDays" type="number" min="1" max="365" step="1" value="1" inputmode="numeric" style="width:100px"><button id="fcMake" type="button" class="p">இணைப்பை உருவாக்கு</button></div>
+<div id="fcLinkBox" class="hide">
 <label for="fcLink">இணைப்பு</label><input id="fcLink" type="text" readonly>
 <label for="fcNum">அலைபேசி எண் (WhatsApp / SMS அனுப்ப)</label><input id="fcNum" type="tel" inputmode="numeric">
-<div class="acts" style="justify-content:flex-start"><button id="fcWa" type="button" class="p">WhatsApp</button><button id="fcSms" type="button">SMS</button><button id="fcCopy" type="button">இணைப்பை நகலெடு</button><button id="fcPrint" type="button">அச்சிடு / PDF</button></div>
-<p class="mut" style="margin:10px 0 0">இந்த இணைப்பை வைத்திருப்பவர் இந்தக் குடும்ப அட்டையைப் பார்க்கலாம். 'புதிய இணைப்பு' பழைய இணைப்பைச் செயலிழக்கச் செய்யும்.</p>
-<div class="acts"><button id="fcNew" type="button">புதிய இணைப்பு</button><button id="fcClose" type="button">மூடு</button></div>
+<div class="acts" style="justify-content:flex-start"><button id="fcWa" type="button" class="p">WhatsApp</button><button id="fcSms" type="button">SMS</button><button id="fcCopy" type="button">இணைப்பை நகலெடு</button></div>
+</div>
+<p class="mut" style="margin:10px 0 0">இந்த இணைப்பை வைத்திருப்பவர் இந்தக் குடும்ப அட்டையைப் பார்க்கலாம். இணைப்பு நீங்கள் தேர்ந்தெடுத்த நாட்கள் வரை மட்டுமே செயல்படும். புதிய இணைப்பு உருவாக்கினால் பழைய இணைப்பு செயலிழக்கும்.</p>
+<div class="acts"><button id="fcPrint" type="button">அச்சிடு / PDF</button><button id="fcClose" type="button">மூடு</button></div>
 </div></div></div>
 <script>
-var SCRIPT_URL="https://script.google.com/macros/s/AKfycbzSb6MUMiG6ko-0GVfI5GId20SMeZ73x4YSUEEWeQTJWh4jwAU7Q5E1aZsSjaUK0r3osA/exec";
+var SCRIPT_URL="https://script.google.com/macros/s/AKfycbxrrCvNvZAgJvu3rrzEZw_sdArDsKHHWCKu9IJJwIll1IwXwlnOtlcMsvsgCBMFh_oFmQ/exec";
 var F=[["name","முழு பெயர்","text"],["gender","பாலினம்","sel",["ஆண்","பெண்","மற்றவை"]],["rel","குடும்பத் தலைவருடன் உறவு முறை","combo"],["status","உறுப்பினர் நிலை","sel",["உயிருடன்","இறந்தவர்"]],["dDate","இறந்த தேதி","date"],["dob","பிறந்த தேதி","date"],["pob","பிறந்த இடம்","text"],["bDate","திருமுழுக்கு பெற்ற தேதி","date"],["bPlace","திருமுழுக்கு பெற்ற பங்கு / இடம்","text"],["cDate","புது நன்மை பெற்ற தேதி","date"],["cPlace","புது நன்மை பெற்ற பங்கு / இடம்","text"],["kDate","உறுதி பூசுதல் பெற்ற தேதி","date"],["kPlace","உறுதி பூசுதல் பெற்ற பங்கு / இடம்","text"],["marital","திருமண நிலை","sel",["திருமணமாகாதவர்","திருமணமானவர்","விதவை / மனைவியை இழந்தவர்","துறவறம்"]],["mDate","திருமண / துறவற தேதி","date"],["mPlace","திருமணம் / துறவற இடம்","text"]];
 var REL=[["Mother","அம்மா"],["Father","அப்பா"],["Brother","சகோதரன்"],["Sister","சகோதரி"],["Son","மகன்"],["Daughter","மகள்"],["Husband","கணவர்"],["Wife","மனைவி"],["Grandfather","தாத்தா"],["Grandmother","பாட்டி"],["Grandson","பேரன்"],["Granddaughter","பேத்தி"],["Father-in-law","மாமனார்"],["Mother-in-law","மாமியார்"],["Brother-in-law","மைத்துனர்"],["Sister-in-law","மைத்துனி"]];
 function fillRel(){$("relList").innerHTML=REL.map(function(r){return'<option value="'+r[0]+'" label="'+(LANG==="en"?r[0]:r[1])+'"></option>'}).join("")}
@@ -1266,15 +1270,34 @@ function cardHtml(c){   /* the card itself - used by the admin preview and by th
   return h+'</div></div>';
 }
 function fcm(t,c){msgBox("fcMsg",t,c)}
-async function openCard(id,regen){
+function untilText(u){var p=String(u||"").split(" "),d=pd(p[0]);return(d?fd(d):p[0])+(p[1]?" "+p[1]:"")}
+function cardShow(j){   /* j = cardInfo / cardLink result: show the link (if one is working) */
+  var has=!!(j&&j.exists);FC.has=has;
+  $("fcLinkBox").classList.toggle("hide",!has);
+  $("fcMake").textContent=has?"புதிய இணைப்பை உருவாக்கு":"இணைப்பை உருவாக்கு";
+  if(has)$("fcLink").value=cardUrl(FC.id,j.key);
+}
+async function openCard(id){
   var f=pageFams.find(function(r){return r.id===id});if(!f)return;
-  var j=await call({action:"cardLink",admin:adminPw,id:id,regen:!!regen});
+  var j=await call({action:"cardInfo",admin:adminPw,id:id});
   if(!(j&&j.ok)){aMsg(errText(j),"bad");return}
-  FC={id:id,f:f};
-  $("fcCard").innerHTML=cardHtml(f);$("fcLink").value=cardUrl(id,j.key);$("fcNum").value=f.phone||"";
-  var ud=j.until?pd(j.until):null;
-  fcm((regen?"புதிய இணைப்பு உருவாக்கப்பட்டது. பழைய இணைப்பு இனி செயல்படாது. ":"")+(j.until?"இந்த இணைப்பு செல்லுபடியாகும் நாள்: "+(ud?fd(ud):j.until):""),"ok");
-  $("fcm").classList.add("on");$("fcWa").focus();
+  FC={id:id,f:f,max:j.maxDays||365,has:false};
+  $("fcCard").innerHTML=cardHtml(f);$("fcNum").value=f.phone||"";
+  $("fcDays").max=FC.max;$("fcDays").value=j.defDays||1;
+  cardShow(j);
+  fcm(j.exists?"இந்த இணைப்பு செல்லுபடியாகும் நாள்: "+untilText(j.until):(j.expired?"முந்தைய இணைப்பின் காலம் முடிந்துவிட்டது. புதிய இணைப்பை உருவாக்கவும்.":"செல்லுபடியாகும் நாட்களை உள்ளிட்டு இணைப்பை உருவாக்கவும்."),"ok");
+  $("fcm").classList.add("on");$("fcDays").focus();$("fcDays").select();
+}
+async function makeCard(){
+  var d=Number($("fcDays").value);
+  if(!(Number.isInteger(d)&&d>=1&&d<=FC.max)){fcm("நாட்களை 1 அல்லது அதற்கு மேல் முழு எண்ணாக உள்ளிடவும். அனுமதிக்கப்பட்ட நாட்கள் (அதிகபட்சம்): "+FC.max,"bad");return}
+  var had=FC.has;
+  if(had&&!confirm("புதிய இணைப்பை உருவாக்கினால் பழைய இணைப்பு செயல்படாது. தொடரவா?"))return;
+  var j=await call({action:"cardLink",admin:adminPw,id:FC.id,days:d});
+  if(!(j&&j.ok)){fcm(errText(j),"bad");return}
+  cardShow(j);
+  fcm("இணைப்பு உருவாக்கப்பட்டது. "+(had?"பழைய இணைப்பு இனி செயல்படாது. ":"")+"இந்த இணைப்பு செல்லுபடியாகும் நாள்: "+untilText(j.until),"ok");
+  $("fcWa").focus();
 }
 function closeCard(){$("fcm").classList.remove("on")}
 function fcShare(kind){
@@ -1288,7 +1311,8 @@ $("fcCopy").onclick=function(){
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(v).then(done,fb);else fb();
 };
 $("fcPrint").onclick=function(){document.body.classList.add("cardprint");window.print();document.body.classList.remove("cardprint")};
-$("fcNew").onclick=function(){if(FC.id&&confirm("புதிய இணைப்பை உருவாக்கினால் பழைய இணைப்பு செயல்படாது. தொடரவா?"))openCard(FC.id,true)};
+$("fcMake").onclick=makeCard;
+$("fcDays").onkeydown=function(e){if(e.key==="Enter")makeCard()};
 $("fcClose").onclick=closeCard;
 $("fcm").onclick=function(e){if(e.target===this)closeCard()};
 document.addEventListener("keydown",function(e){if(e.key==="Escape"&&$("fcm").classList.contains("on"))closeCard()});
@@ -1300,8 +1324,7 @@ function cardBoot(){   /* a family opened its card link: show ONLY the card (no 
   document.body.classList.remove("gateMode");$("cardView").classList.remove("hide");
   $("cvBody").innerHTML='<p class="mut">சரிபார்க்கிறது…</p>';
   call({action:"cardGet",id:m[1],key:m[2]}).then(function(j){
-    var ud=j&&j.ok&&j.until?pd(j.until):null;
-    $("cvBody").innerHTML=(j&&j.ok)?cardHtml(j.card)+(j.until?'<p class="mut noprint" style="margin:10px 0 0">இந்த இணைப்பு செல்லுபடியாகும் நாள்: '+esc(ud?fd(ud):j.until)+'. அதற்குள் அச்சிட்டு அல்லது PDF ஆகச் சேமித்துக் கொள்ளவும்.</p>':''):'<p class="msg bad">'+esc(j&&j.error==="network"?errText(j):j&&j.error==="expired"?"இந்த இணைப்பின் காலம் முடிந்துவிட்டது. புதிய இணைப்புக்கு உங்கள் தன்னார்வலரை அல்லது பங்கு அலுவலகத்தை அணுகவும்.":"இணைப்பு செல்லாது அல்லது புதுப்பிக்கப்பட்டுள்ளது.")+'</p>';
+    $("cvBody").innerHTML=(j&&j.ok)?cardHtml(j.card)+(j.until?'<p class="mut noprint" style="margin:10px 0 0">இந்த இணைப்பு செல்லுபடியாகும் நாள்: '+esc(untilText(j.until))+'. அதற்குள் அச்சிட்டு அல்லது PDF ஆகச் சேமித்துக் கொள்ளவும்.</p>':''):'<p class="msg bad">'+esc(j&&j.error==="network"?errText(j):j&&j.error==="expired"?"இந்த இணைப்பின் காலம் முடிந்துவிட்டது. புதிய இணைப்புக்கு உங்கள் தன்னார்வலரை அல்லது பங்கு அலுவலகத்தை அணுகவும்.":"இணைப்பு செல்லாது அல்லது புதுப்பிக்கப்பட்டுள்ளது.")+'</p>';
   });
   return true;
 }
@@ -1442,6 +1465,7 @@ EX["சேகரித்தவர்"]="Collected by";EX["சேகரித்
 EX["அன்பியங்கள்"]="Anbiyams";EX["குடும்ப அட்டை"]="Family Card";EX["📇 குடும்ப அட்டை"]="📇 Family card";EX["இணைப்பை நகலெடு"]="Copy link";EX["அச்சிடு / PDF"]="Print / PDF";EX["புதிய இணைப்பு"]="New link";if(!EX["மூடு"])EX["மூடு"]="Close";if(!EX["இணைப்பு"])EX["இணைப்பு"]="Link";EX["இன்றைய நிகழ்வுகள்"]="Today's Events";EX["ஆண்டு"]="Year";EX["கடைசி 10 ஆண்டுகள்"]="Last 10 years";EX["கடைசி 20 ஆண்டுகள்"]="Last 20 years";EX["கடைசி 30 ஆண்டுகள்"]="Last 30 years";EX["அனைத்து ஆண்டுகள்"]="All years";EX["ஆண்டு வரம்பு"]="Year range";EX["அன்பியம் ID"]="Anbiyam ID";EX["ID இணைப்பைச் சரிசெய்"]="Fix ID links";EX["இணைக்கப்படாதவை"]="Not linked";EX["பெயர் மாற்று"]="Rename";EX["பட்டியலில் சேர்"]="Add to list";EX["அனைத்தும்"]="All";EX["அனைவரும்"]="Everyone";EX["சரிபார்ப்பு நிலுவை"]="Pending verification";EX["சரிபார்க்கப்பட்டது"]="Verified";EX["சரிபார்ப்பு நிலை"]="Verification status";
 EX["✔ சரிபார்"]="✔ Verify";EX["↺ நிலுவைக்கு மாற்று"]="↺ Mark pending";EX["தேடு"]="Search";EX["மீட்டெடு"]="Restore";EX["நீக்கப்பட்டவை"]="Deleted";EX["மாற்றப் பதிவு"]="Change Log";
 EX["← முந்தைய 10"]="← Previous 10";EX["அடுத்த 10 →"]="Next 10 →";EX["← முந்தையவை"]="← Previous";EX["அடுத்தவை →"]="Next →";
+EX["செல்லுபடியாகும் நாட்கள்"]="Valid for (days)";EX["இணைப்பை உருவாக்கு"]="Create link";EX["புதிய இணைப்பை உருவாக்கு"]="Create new link";
 Object.keys(EX).forEach(function(k){if(/அன்பியம்$/.test(k)&&k!=="அன்பியம்")PH.push([k,EX[k]])});
 PH.push(
 ["இந்த இணைப்பை வைத்திருப்பவர் இந்தக் குடும்ப அட்டையைப் பார்க்கலாம். 'புதிய இணைப்பு' பழைய இணைப்பைச் செயலிழக்கச் செய்யும்.","Anyone with this link can view this family card. 'New link' stops the old link from working."],
@@ -1489,6 +1513,13 @@ PH.push(["சரிபார்ப்பு – முழு விவரம்"
 ["✔ ஆம், சரிபார்க்கப்பட்டது எனக் குறி","✔ Yes, mark as Verified"]);
 PH.sort(function(a,b){return b[0].length-a[0].length});
 PH.push(["இந்த இணைப்பு செல்லுபடியாகும் நாள்:","This link is valid until:"],
+["இந்த இணைப்பை வைத்திருப்பவர் இந்தக் குடும்ப அட்டையைப் பார்க்கலாம். இணைப்பு நீங்கள் தேர்ந்தெடுத்த நாட்கள் வரை மட்டுமே செயல்படும். புதிய இணைப்பு உருவாக்கினால் பழைய இணைப்பு செயலிழக்கும்.","Anyone holding this link can view this family card. The link works only for the number of days you choose. Creating a new link disables the old one."],
+["முந்தைய இணைப்பின் காலம் முடிந்துவிட்டது. புதிய இணைப்பை உருவாக்கவும்.","The previous link has expired. Create a new link."],
+["செல்லுபடியாகும் நாட்களை உள்ளிட்டு இணைப்பை உருவாக்கவும்.","Enter the number of valid days and create the link."],
+["நாட்களை 1 அல்லது அதற்கு மேல் முழு எண்ணாக உள்ளிடவும்.","Enter the days as a whole number, 1 or more."],
+["அனுமதிக்கப்பட்ட நாட்கள் (அதிகபட்சம்):","Allowed days (maximum):"],
+["இணைப்பு உருவாக்கப்பட்டது.","Link created."],
+["பழைய இணைப்பு இனி செயல்படாது.","The old link no longer works."],
 ["அதற்குள் அச்சிட்டு அல்லது PDF ஆகச் சேமித்துக் கொள்ளவும்.","Please print it or save it as a PDF before then."],
 ["இந்த இணைப்பின் காலம் முடிந்துவிட்டது. புதிய இணைப்புக்கு உங்கள் தன்னார்வலரை அல்லது பங்கு அலுவலகத்தை அணுகவும்.","This link has expired. Please contact your volunteer or the parish office for a new link."]);
 PH.sort(function(a,b){return b[0].length-a[0].length});
