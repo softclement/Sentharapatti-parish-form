@@ -97,6 +97,16 @@ body.adminOnly #tF,body.adminOnly #tL{display:none}
 .spin{width:38px;height:38px;border:4px solid var(--line);border-top-color:var(--pri);border-radius:50%;margin:0 auto 12px;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media print{.wait{display:none!important}.tabs,.noprint,#vF,#vL,#aRec,#aLock,h1,.wrap>.sub,button{display:none!important}.wrap{max-width:none}.card,.kpi{break-inside:avoid}body{background:#fff}}
+.vfy{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.5);padding:12px}
+.vfy.on{display:flex}
+.vfy .bx{background:var(--card);color:var(--ink);border-radius:14px;padding:18px 18px 14px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;box-shadow:0 8px 30px rgba(0,0,0,.35)}
+.vfy .bx h2{margin:0 0 8px}
+.vfy .mb{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:8px 0;background:var(--mbg)}
+.vfy .mb h3{margin:0 0 4px;font-size:.95rem;color:var(--pri)}
+.vfy .kv{display:grid;grid-template-columns:minmax(96px,38%) 1fr;gap:2px 10px;font-size:.88rem;margin:2px 0}
+.vfy .kv .k{color:var(--mut)}.vfy .kv .v{word-break:break-word}
+.vfy .acts{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;margin-top:12px}
+@media print{.vfy{display:none!important}}
 </style>
 </head>
 <body class="gateMode">
@@ -169,8 +179,8 @@ body.adminOnly #tF,body.adminOnly #tL{display:none}
 <button id="aBack" class="link" type="button" style="margin-top:10px;color:var(--mut)">← தன்னார்வலர் உள்நுழைவு</button>
 </div>
 <div id="aBody" class="hide">
-<div class="tabs noprint wrapt"><button id="sA" class="on" type="button">பதிவுகள்</button><button id="sD" type="button">டாஷ்போர்டு</button><button id="sH" type="button">உள்நுழைவு வரலாறு</button><button id="sE" type="button">இன்றைய நிகழ்வுகள்</button><button id="sV" type="button">தன்னார்வலர்கள்</button><button id="sN" type="button">அன்பியங்கள்</button><button id="sB" type="button">நீக்கப்பட்டவை</button><button id="sC" type="button">மாற்றப் பதிவு</button><button id="alogout" type="button">வெளியேறு</button></div>
-<div id="aRec">
+<div class="tabs noprint wrapt"><button id="sE" class="on" type="button">இன்றைய நிகழ்வுகள்</button><button id="sA" type="button">பதிவுகள்</button><button id="sD" type="button">டாஷ்போர்டு</button><button id="sH" type="button">உள்நுழைவு வரலாறு</button><button id="sV" type="button">தன்னார்வலர்கள்</button><button id="sN" type="button">அன்பியங்கள்</button><button id="sB" type="button">நீக்கப்பட்டவை</button><button id="sC" type="button">மாற்றப் பதிவு</button><button id="alogout" type="button">வெளியேறு</button></div>
+<div id="aRec" class="hide">
 <div class="card">
 <h2>அனைத்துப் பதிவுகள் (<span id="acnt">0</span>)</h2>
 <div id="aBy" class="mut" style="margin:8px 0"></div>
@@ -206,7 +216,7 @@ body.adminOnly #tF,body.adminOnly #tL{display:none}
 <div id="aHist" class="hide"><div class="card"><div class="hd"><h2>உள்நுழைவு வரலாறு</h2><span class="tools"><select id="vlWho" aria-label="உள்நுழைவு வரலாறு"><option value="">அனைவரும்</option><option value="admin">நிர்வாகி</option><option value="vol">தன்னார்வலர்கள்</option></select><button id="lRef" type="button" class="sm">⟳ புதுப்பி</button><button id="vlCsv" type="button" class="sm">CSV</button></span></div>
 <p class="mut" style="margin:0 0 8px">நேரம் / அலைபேசி / பெயர் தலைப்பைத் தொட்டால் வரிசைப்படுத்தலாம். சமீபத்திய 1000 பதிவுகள் வரை.</p>
 <div id="vLog"></div></div></div>
-<div id="aToday" class="hide"><div class="card"><div class="hd"><h2>இன்றைய நிகழ்வுகள்</h2><button id="eRef" type="button" class="sm">⟳ புதுப்பி</button></div>
+<div id="aToday"><div class="card"><div class="hd"><h2>இன்றைய நிகழ்வுகள்</h2><button id="eRef" type="button" class="sm">⟳ புதுப்பி</button></div>
 <p class="mut" id="eDate" style="margin:0 0 8px"></p><div id="eBody"></div></div></div>
 <div id="aAnb" class="hide"><div class="card"><div class="hd"><h2>அன்பியங்கள் (<span id="ncnt">0</span>)</h2><button id="nRef" type="button" class="sm">⟳ புதுப்பி</button></div>
 <p class="mut" style="margin:0 0 8px">செயலிழக்கச் செய்தால் புதிய பதிவுகளில் அந்தப் பெயர் தோன்றாது; ஏற்கனவே உள்ள பதிவுகள் மாறாது.</p>
@@ -275,6 +285,14 @@ body.adminOnly #tF,body.adminOnly #tL{display:none}
 </div>
 </div>
 
+<div id="vfy" class="vfy" role="dialog" aria-modal="true" aria-labelledby="vfyT">
+<div class="bx">
+<h2 id="vfyT">சரிபார்ப்பு – முழு விவரம்</h2>
+<div id="vfyBody"></div>
+<p class="msg ok" style="margin:12px 0 0">இந்த விவரங்கள் சரியாக உள்ளன என உறுதி செய்து, 'சரிபார்க்கப்பட்டது' எனக் குறிக்கவா?</p>
+<div class="acts"><button id="vfyNo" type="button">ரத்து செய்</button><button id="vfyOk" type="button" class="p">✔ ஆம், சரிபார்க்கப்பட்டது எனக் குறி</button></div>
+</div>
+</div>
 <div id="wait" class="wait" role="alert" aria-live="assertive"><div class="bx"><div class="spin"></div><div id="waitTxt"></div></div></div>
 
 <script>
@@ -527,7 +545,7 @@ async function adminLogin(){
   $("alogin").disabled=true;aMsg("");
   var j=await call({action:"adminLogin",admin:pw,device:UA});   /* the server writes this attempt to the login history */
   $("alogin").disabled=false;
-  if(j&&j.ok){adminPw=pw;fams=[];famsFresh=false;$("apw").value="";$("aq").value="";$("aVer").value="";$("aAnbF").value="";$("aLock").classList.add("hide");$("aBody").classList.remove("hide");applyPage(j);loadAnbAdmin()}
+  if(j&&j.ok){adminPw=pw;fams=[];famsFresh=false;$("apw").value="";$("aq").value="";$("aVer").value="";$("aAnbF").value="";$("aLock").classList.add("hide");$("aBody").classList.remove("hide");applyPage(j);loadAnbAdmin();sub("E")}
   else aMsg(errText(j),"bad");
 }
 async function loadPage(off){   /* ONE page (10 families) from the server */
@@ -542,12 +560,12 @@ async function loadAllFams(){   /* everything - only the dashboard / CSV need th
   aMsg(errText(j),"bad");return false;
 }
 async function refreshAdmin(){famsFresh=false;await loadPage(PG.off)}
-function adminLogout(){adminPw="";fams=[];pageFams=[];famsFresh=false;pageStale=false;PG.off=0;PG.total=0;VOLS=[];LOGS=[];BIN=[];ANBA=[];ANBO=[];ANBS=[];fillAnb("");dashAnb="";sub("A");$("aBody").classList.add("hide");$("aLock").classList.remove("hide");$("alist").innerHTML="";aMsg("");showGate("")}
+function adminLogout(){adminPw="";fams=[];pageFams=[];famsFresh=false;pageStale=false;PG.off=0;PG.total=0;VOLS=[];LOGS=[];BIN=[];ANBA=[];ANBO=[];ANBS=[];fillAnb("");dashAnb="";sub("E");$("aBody").classList.add("hide");$("aLock").classList.remove("hide");$("alist").innerHTML="";aMsg("");showGate("")}
 function verBadge(f){var v=f.ver==="Verified";return'<span class="vbadge '+(v?'on':'pend')+'">'+(v?"சரிபார்க்கப்பட்டது":"சரிபார்ப்பு நிலுவை")+'</span>'}
 function renderAdmin(){
   var c=PG.counts;
   $("acnt").textContent=c.all;
-  $("aBy").textContent=PG.by.length?"சேகரிப்பவர் வாரியாக: "+PG.by.map(function(x){return x[0]+" – "+x[1]}).join(" · "):"";
+  $("aBy").innerHTML=PG.by.length?'<div><b>சேகரிப்பவர் வாரியாக:</b></div>'+PG.by.map(function(x){return'<div>'+esc(x[0])+' – '+x[1]+'</div>'}).join(""):"";
   $("aStat").textContent="சரிபார்ப்பு நிலுவை: "+c.pending+" · சரிபார்க்கப்பட்டது: "+c.verified;
   $("alist").innerHTML=pageFams.length?pageFams.map(function(f){
     var ms=f.members||[],dead=ms.filter(function(x){return x.status===DEAD}).length,v=f.ver==="Verified";
@@ -566,6 +584,39 @@ async function adminVerify(id,st){
   var j=await call({action:"verify",admin:adminPw,id:id,status:st});
   if(j&&j.ok){famsFresh=false;aMsg(st==="Verified"?"சரிபார்க்கப்பட்டதாகக் குறிக்கப்பட்டது.":"மீண்டும் சரிபார்ப்பு நிலுவைக்கு மாற்றப்பட்டது.","ok");await loadPage(PG.off)}else aMsg(errText(j),"bad");
 }
+
+/* ---------- verify: show the FULL record, then ask for confirmation ---------- */
+var VFY=null;
+function escA(s){return esc(s).replace(/"/g,"&quot;")}
+function kv(k,vHtml){return'<div class="kv"><span class="k">'+esc(k)+'</span><span class="v">'+(vHtml!==""&&vHtml!=null?vHtml:"—")+'</span></div>'}
+function openVerify(id){
+  var f=pageFams.find(function(r){return r.id===id});if(!f)return;
+  VFY=id;
+  var ms=f.members||[],dead=ms.filter(function(x){return x.status===DEAD}).length,loc=String(f.loc||"");
+  var h='<div class="mb"><h3>குடும்ப விவரங்கள்</h3>'
+    +kv("குடும்பத் தலைவர்",esc(f.head))+kv("அன்பியம்",esc(f.anbiyam))+kv("அலைபேசி எண்",esc(f.phone))+kv("முகவரி",esc(f.addr))
+    +kv("இருப்பிடம்",/^https?:\/\//i.test(loc)?'<a href="'+escA(loc)+'" target="_blank" rel="noopener">📍 Google Maps</a>':esc(loc))
+    +kv("உறுப்பினர்கள்",ms.length+(dead?" (இறந்தவர்: "+dead+")":""))
+    +kv("சேகரித்தவர்",esc(f.colName)+(f.colName&&f.colPhone?" · ":"")+esc(f.colPhone))+kv("சேகரித்த தேதி",esc(f.colDate))
+    +kv("நிலை",verBadge(f))+'</div>';
+  ms.forEach(function(m,i){
+    h+='<div class="mb"><h3>குடும்ப உறுப்பினர் '+(i+1)+(i===0?" (குடும்பத் தலைவர்)":"")+'</h3>';
+    F.forEach(function(x){
+      var v=m[x[0]];if(!v)return;
+      if(x[2]==="date"){var d=pd(v);v=d?fd(d):v}else if(x[0]==="rel")v=relLabel(v);
+      h+=kv(x[1],esc(v));
+    });
+    h+='</div>';
+  });
+  $("vfyBody").innerHTML=h;
+  $("vfy").classList.add("on");$("vfyNo").focus();
+  $("vfy").firstElementChild.scrollTop=0;
+}
+function closeVerify(){VFY=null;$("vfy").classList.remove("on")}
+$("vfyNo").onclick=closeVerify;
+$("vfyOk").onclick=function(){var id=VFY;closeVerify();if(id)adminVerify(id,"Verified")};
+$("vfy").onclick=function(e){if(e.target===this)closeVerify()};
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&VFY)closeVerify()});
 
 function csvCell(v){v=v==null?"":String(v);return '"'+v.replace(/"/g,'""')+'"'}
 function makeCsv(list,name){
@@ -598,7 +649,7 @@ $("items").onclick=function(e){var b=e.target.closest("button[data-act]");if(!b)
 $("alist").onclick=function(e){var b=e.target.closest("button[data-act]");if(!b)return;
   if(b.dataset.act==="aedit"){var f=pageFams.find(function(r){return r.id===b.dataset.id});if(f)startEdit(f,"admin","")}
   else if(b.dataset.act==="adel")adminDelete(b.dataset.id);
-  else if(b.dataset.act==="aver")adminVerify(b.dataset.id,b.dataset.st)};
+  else if(b.dataset.act==="aver"){if(b.dataset.st==="Verified")openVerify(b.dataset.id);else adminVerify(b.dataset.id,b.dataset.st)}};
 $("q").oninput=renderList;
 $("adl").onclick=async function(){if(await loadAllFams())makeCsv(fams,"parish-families-all.csv")};
 $("alogin").onclick=adminLogin;$("alogout").onclick=adminLogout;
@@ -843,12 +894,11 @@ function renderToday(){   /* every family (not the dashboard filter): only event
   $("eDate").textContent="இன்றைய தேதி: "+p2(T.getDate())+"-"+p2(T.getMonth()+1)+"-"+T.getFullYear();
   [["🎂 பிறந்த நாள்","b"],["💍 திருமண நாள்","w"],["🕯 நினைவு நாள் (இறந்தவர்)","m"]].forEach(function(s){
     var a=ev[s[1]].filter(function(e){return e.days===0}).sort(function(p,q){return String(p.who).localeCompare(String(q.who),"ta")});tot+=a.length;
-    h+='<p style="margin:12px 0 4px"><b>'+s[0]+' ('+a.length+')</b></p>'+(a.length?tbl(cols,a.map(function(e){return[e.who,e.f.anbiyam||"",e.f.head||"",e.f.phone||"",e.info]}),a.map(function(e){return e.f.id})):'<p class="mut">இல்லை.</p>');
+    h+='<p style="margin:12px 0 4px"><b>'+s[0]+' ('+a.length+')</b></p>'+(a.length?tbl(cols,a.map(function(e){return[e.who,e.f.anbiyam||"",e.f.head||"",e.f.phone||"",e.info]})):'<p class="mut">இல்லை.</p>');
   });
   $("eBody").innerHTML=tot?h:'<p class="mut">இன்று நிகழ்வுகள் இல்லை.</p>'+h;
 }
 $("eRef").onclick=async function(){if(await loadAllFams())renderToday()};
-$("aToday").onclick=function(e){var b=e.target.closest("button[data-act=dedit]");if(!b)return;var f=fams.find(function(r){return r.id===b.dataset.id});if(f)startEdit(f,"admin","")};
 function renderQ(){
   var fl=dfams(),L=flat(fl),NA=function(s){return!String(s||"").trim()};
   var DL={};F.forEach(function(f){DL[f[0]]=f[1]});
@@ -1349,6 +1399,9 @@ PH.push(
 ["யார், எந்தப் பதிவை, எப்போது திருத்தினார் / நீக்கினார் என்பதை இங்கே காணலாம்.","See who edited or deleted which record, and when."],
 ["பெயர் / நபர் / செயல் மூலம் தேடுக","Search by name / person / action"],["மாற்றப் பதிவுகள் இல்லை.","No change log entries."],["மாற்றப் பதிவு","Change Log"]
 );
+PH.push(["சரிபார்ப்பு – முழு விவரம்","Verification – full details"],
+["இந்த விவரங்கள் சரியாக உள்ளன என உறுதி செய்து, 'சரிபார்க்கப்பட்டது' எனக் குறிக்கவா?","Confirm that these details are correct and mark the record as Verified?"],
+["✔ ஆம், சரிபார்க்கப்பட்டது எனக் குறி","✔ Yes, mark as Verified"]);
 PH.sort(function(a,b){return b[0].length-a[0].length});
 function seg(x){
   if(EX.hasOwnProperty(x))return EX[x];
